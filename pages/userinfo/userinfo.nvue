@@ -1,0 +1,343 @@
+<template>
+  <view class="userinfo">
+    <view class="header-view">
+      <view class="header-bg">
+        <image src="../../static/images/115.png" class="header-bg-img"></image>
+      </view>
+      <view class="user-view">
+        <view class="user-header1">
+          <view class="user-header1-left">
+            <text class="user-header1-name">{{user.username}}</text>
+            <image class="user-header1-img2" v-if="user.level  ==  0" mode="aspectFit" src="/static/images/142.png"></image>
+            <image class="user-header1-img2" v-if="user.level  ==  1" mode="aspectFit" src="/static/images/143.png"></image>
+            <image class="user-header1-img2" v-if="user.level  ==  2" mode="aspectFit" src="/static/images/141.png"></image>
+            <image src="../../static/images/41.png" class="user-header1-img1"></image>
+          </view>
+          <text class="user-header1-right" @tap="toguanzhu">關注</text>
+        </view>
+        <text class="user-jianjie">{{user.u == 1 ? '這傢伙太懶了，還沒有任何簽名' : user.bio}}</text>
+        <text class="user-fensi">{{user.ganzhu}}關注·{{user.fensi}}粉絲</text>
+      </view>
+      <image :src="user.avatar_text ? user.avatar_text : user.avatar" class="user-image"></image>
+    </view>
+    <view class="all">
+      <text class="all-text">全部</text>
+      <text class="all-count" v-if="user">({{user.count}})</text>
+    </view>
+    <view v-for="(item,index) in community">
+      <tuwen v-if="item.class == 2" :items="item"></tuwen>
+      <shipin v-if="item.class == 1" :items="item"></shipin>
+      <duanwen v-if="item.class == 0" :items="item"></duanwen>
+      <!-- <wenda></wenda> -->
+    </view>
+    <uni-load-more :status="more"></uni-load-more>
+  </view>
+</template>
+
+<script>
+  import tuwen from '../index/components/tuwen.vue'
+  import shipin from '../index/components/video.nvue'
+  import duanwen from '../index/components/duanwen.vue'
+  import wenda from '../index/components/wenda.vue'
+  import uniLoadMore from "@/components/uni-load-more/uni-load-more.vue"
+  export default {
+    data() {
+      return {
+        user_id: '',
+        url: getApp().globalData.url,
+        header: getApp().globalData.header,
+        page: 1,
+        limit: 10,
+        user: [],
+        community: [],
+        more: 'more',
+        class: 0,
+        isguanzhu: ''
+      }
+    },
+    onLoad(option) {
+      this.user_id = option.id
+      this.class = option.class
+      this.isguanzhu = option.isguanzhu
+      console.log(option)
+      if (this.isguanzhu == 1) {
+        this.getdata()
+      } else {
+        this.getdata1()
+      }
+    },
+    onReachBottom() {
+      this.page++
+      this.more = 'loading'
+      if (this.isguanzhu == 1) {
+        this.getdata()
+      } else {
+        this.getdata1()
+      }
+
+    },
+    methods: {
+      toguanzhu() {
+        if (uni.getStorageSync("usertoken")) {
+          uni.showLoading({
+            mask: true,
+            title: "請稍後"
+          })
+          uni.request({
+            url: this.url + "/api/community/follow",
+            method: "GET",
+            header: {
+              token: uni.getStorageSync("usertoken")
+            },
+            data: {
+              id: this.user.id,
+              class: this.user.u
+            },
+            success: (res) => {
+              uni.hideLoading()
+              // console.log(res.data.data);
+              uni.showToast({
+                icon: "none",
+                title: res.data.msg
+              })
+            }
+          })
+        } else {
+          uni.showToast({
+            icon: "none",
+            title: "請登入"
+          })
+        }
+      },
+      getdata1() {
+        uni.showLoading({
+          mask: true,
+          title: "請稍後"
+        })
+        var header
+        if(uni.getStorageSync("usertoken")){
+          header = {
+            // 'content-type': 'application/x-www-form-urlencoded',
+            token: uni.getStorageSync("usertoken")
+          }
+        }else{
+          header = {
+            // 'content-type': 'application/x-www-form-urlencoded'
+          }
+        }
+        uni.request({
+          url: this.url + '/api/community/personal',
+          method: "POST",
+          data: {
+            id: this.user_id,
+            class: this.class,
+            current: this.page,
+            every: this.limit
+          },
+          header: header,
+          success: (res) => {
+            uni.hideLoading()
+            this.detail = res.data.data
+            this.user = res.data.data.user
+            if (res.data.data.community.length > 0) {
+              this.community = this.community.concat(res.data.data.community)
+            } else {
+              this.page--
+              this.more = 'noMore'
+            }
+
+            console.log(res.data);
+          }
+        })
+
+      },
+      getdata() {
+        uni.showLoading({
+          mask: true,
+          title: "請稍後"
+        })
+        uni.request({
+          url: this.url + '/api/community/click_follow',
+          method: "POST",
+          data: {
+            id: this.user_id,
+            class: this.class,
+            current: this.page,
+            every: this.limit
+          },
+          header: {
+            token: uni.getStorageSync("usertoken") ? uni.getStorageSync("usertoken") : ''
+          },
+          success: (res) => {
+            uni.hideLoading()
+            this.detail = res.data.data
+            this.user = res.data.data.user
+            if (res.data.data.community.length > 0) {
+              this.community = this.community.concat(res.data.data.community)
+            } else {
+              this.page--
+              this.more = 'noMore'
+            }
+
+            console.log(res.data);
+          }
+        })
+      }
+    },
+    components: {
+      tuwen,
+      shipin,
+      duanwen,
+      wenda,
+      uniLoadMore
+    }
+  }
+</script>
+
+<style>
+  .all-count {
+    font-size: 28rpx;
+    font-family: PingFangSC-Regular, PingFang SC;
+    font-weight: 400;
+    color: rgba(32, 32, 32, 1);
+
+  }
+
+  .all-text {
+    border-bottom-width: 6rpx;
+    border-color: #FFD100;
+    border-style: solid;
+    font-size: 28rpx;
+    font-family: PingFangSC-Regular, PingFang SC;
+    font-weight: 400;
+    color: rgba(32, 32, 32, 1);
+    padding-bottom: 8rpx;
+  }
+
+  .all {
+    padding: 24rpx 20rpx 0 20rpx;
+    /* #ifdef H5 */
+    display: flex;
+    /* #endif */
+    flex-direction: row;
+    align-items: flex-start;
+    height: 84rpx;
+  }
+
+  .user-fensi {
+    padding: 0 48rpx;
+    font-size: 28rpx;
+    font-family: PingFangSC-Regular, PingFang SC;
+    font-weight: 400;
+    color: rgba(32, 32, 32, 1);
+  }
+
+  .user-jianjie {
+    padding: 10rpx 48rpx 12rpx 48rpx;
+    /* #ifdef H5 */
+    overflow: hidden;
+    white-space: nowrap;
+
+    /* #endif */
+    lines: 1;
+    text-overflow: ellipsis;
+    font-size: 28rpx;
+    font-family: PingFangSC-Regular, PingFang SC;
+    font-weight: 400;
+    color: rgba(153, 153, 153, 1);
+  }
+
+  .user-header1-right {
+    width: 112rpx;
+    height: 56rpx;
+    background-color: rgba(255, 209, 0, 1);
+    border-radius: 28rpx;
+    text-align: center;
+    line-height: 56rpx;
+    font-size: 28rpx;
+    font-family: PingFangSC-Medium, PingFang SC;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 1);
+  }
+
+  .user-header1-img2 {
+    width: 170rpx;
+    height: 50rpx;
+  }
+
+  .user-header1-img1 {
+    width: 38rpx;
+    height: 30rpx;
+    margin: 0 14rpx;
+  }
+
+  .user-header1-name {
+    font-size: 28rpx;
+    font-family: PingFangSC-Medium, PingFang SC;
+    font-weight: 500;
+    color: rgba(32, 32, 32, 1);
+  }
+
+  .user-header1-left {
+    /* #ifdef H5 */
+    display: flex;
+    /* #endif */
+    flex-direction: row;
+    align-items: center;
+
+  }
+
+  .user-header1 {
+    padding: 70rpx 48rpx 0 48rpx;
+    /* #ifdef H5 */
+    display: flex;
+    /* #endif */
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .header-view {
+    width: 750rpx;
+    height: 568rpx;
+  }
+
+  .user-image {
+    width: 136rpx;
+    height: 136rpx;
+    border-style: solid;
+    border-color: rgba(255, 255, 255, 1);
+    border-width: 4rpx;
+    border-radius: 100rpx;
+    /* border:4px solid rgba(255,255,255,1); */
+    position: absolute;
+    bottom: 202rpx;
+    z-index: 10;
+    left: 68rpx;
+  }
+
+  .user-view {
+    width: 710rpx;
+    margin: -116rpx 20rpx 0 20rpx;
+    height: 268rpx;
+    background-color: rgba(255, 255, 255, 1);
+    border-radius: 6rpx;
+    border-color: rgba(229, 229, 229, 1);
+    border-width: 2rpx;
+    border-style: solid;
+    position: relative;
+    /* z-index:-10; */
+    /* border:2rpx solid rgba(229,229,229,1); */
+  }
+
+  .header-bg-img {
+    width: 750rpx;
+    height: 416rpx;
+
+  }
+
+  .header-bg {
+    width: 750rpx;
+    height: 416rpx;
+  }
+</style>

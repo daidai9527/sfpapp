@@ -1,0 +1,199 @@
+<template>
+	<view>
+		<view :style="{height:statusheight + 'px'}" class="status-bar"></view>
+		<list :style="{height:windowheight + 'px'}" class="content" :pagingEnabled="true" @loadmore="getvideos"
+		 :loadmoreoffset="50" @scroll="scrolllist">
+			<cell v-for="(item,index) in videolist" :key="index">
+				<small-video :inputbottom="inputbottom" :windowheight="windowheight" :src="item" :ggdata="ggdata" :ref="'video' + index" :index="index"></small-video>
+			</cell>
+			<loading :display="loading">
+				<view class="more-view">
+					<image src="../../static/images/36.gif" mode="aspectFit" class="more-img"></image>
+					<text class="more-text">加載更多</text>
+				</view>
+			</loading>
+		</list>
+
+	</view>
+</template>
+<script>
+	import smallVideo from "../../components/small-video/small-video.vue"
+
+	export default {
+		data() {
+			return {
+				statusheight: 0,
+				windowheight: 0,
+				videolist: [],
+				videoindex: 0,
+				windowheight0: 0,
+				windowheight1: 0,
+				windowheight2: 0,
+				loading: 'hide',
+        inputbottom:0,
+        url: getApp().globalData.url,
+        header: getApp().globalData.header,
+        page:1,
+        ggdata:[]
+			}
+		},
+		components: {
+			smallVideo
+		},
+		onLoad() {
+			this.getvideo()
+			this.statusheight = uni.getSystemInfoSync().statusBarHeight
+			this.windowheight = uni.getSystemInfoSync().windowHeight - this.statusheight
+			this.windowheight2 = this.windowheight
+			this.windowheight0 = this.windowheight0 - this.windowheight
+      this.getguanggao()
+		},
+		onShow() {
+			uni.setTabBarStyle({
+				backgroundColor: "#000000",
+				selectedColor: "#FFD100"
+			})
+      uni.onKeyboardHeightChange((e) => {
+        this.inputbottom = e.height
+        // console.log(e.height)
+      })
+		},
+		methods: {
+      getguanggao(){
+        uni.request({
+          url:this.url + '/api/adv/others',
+          data:{
+            class:3
+          },
+          success: (res) => {
+            this.ggdata = res.data.data
+            console.log(res.data);
+          }
+        })
+      },
+			startvideo() {
+				var str = 'video' + this.videoindex
+				this.$nextTick(() => {
+					this.$refs[str][0].startplay()
+				})
+			},
+			getvideos() {
+				this.loading = 'show'
+        this.page++
+        this.getvideo()
+			},
+			scrolllist(e) {
+				if ((e.contentOffset.y * -1 + 10) > this.windowheight2) {
+					this.windowheight1 = this.windowheight1 + this.windowheight
+					this.windowheight2 = this.windowheight2 + this.windowheight
+					this.windowheight0 = this.windowheight0 + this.windowheight
+					// console.log("下");
+					var str = 'video' + this.videoindex
+					this.$nextTick(() => {
+						// console.log("暂停");
+						this.$refs[str][0].stopplay()
+						this.videoindex++
+						this.startvideo()
+					})
+
+				} else if ((e.contentOffset.y * -1) < (this.windowheight0 + 10)) {
+					this.windowheight1 = this.windowheight1 - this.windowheight
+					this.windowheight2 = this.windowheight2 - this.windowheight
+					this.windowheight0 = this.windowheight0 - this.windowheight
+					// console.log("上");
+					var str = 'video' + this.videoindex
+					this.$nextTick(() => {
+						// console.log("暂停");
+						this.$refs[str][0].stopplay()
+						this.videoindex--
+						this.startvideo()
+					})
+				}
+			},
+			getvideo() {
+        if(this.page == 1){
+          uni.showLoading({
+            mask:true,
+            title:"請稍後"
+          })
+        }
+        if(uni.getStorageSync("usertoken")){
+          var header = {
+            token:uni.getStorageSync("usertoken")
+          }
+        }else{
+          var header = {}
+        }
+        uni.request({
+          url:this.url + '/api/tvideo/video_list',
+          method:"POST",
+          data:{
+            current:this.page,
+            every:10
+          },
+          header:header,
+          success: (res) => {
+            uni.hideLoading()
+            if(res.data.code == 200){
+              this.loading = 'hide'
+              if(res.data.data.length > 0){
+                this.videolist = this.videolist.concat(res.data.data)
+                if(this.page == 1){
+                  this.startvideo()
+                }
+              }else{
+                uni.showToast({
+                  icon:"none",
+                  title:"沒有更多了"
+                })
+                this.page--
+              }
+            }
+            console.log(res.data);
+          }
+        })
+				
+				
+			}
+		},
+		onHide() {
+			uni.setTabBarStyle({
+				backgroundColor: "#fff",
+				selectedColor: "#CECECE"
+			})
+			var str = 'video' + this.videoindex
+			this.$refs[str][0].stopplay()
+		}
+	}
+</script>
+<style>
+  
+	.more-view {
+		flex-direction: row;
+		align-items: center;
+		justify-content: center;
+		padding: 20rpx 0;
+	}
+
+	.more-img {
+		width: 40rpx;
+		height: 40rpx;
+		margin-right: 20rpx;
+	}
+
+	.more-text {
+		font-size: 28rpx;
+		color: #fff;
+	}
+
+	.content {
+		width: 750rpx;
+		background-color: #000;
+	}
+
+	.status-bar {
+		width: 750rpx;
+		background-color: #000;
+
+	}
+</style>

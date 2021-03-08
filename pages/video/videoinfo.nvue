@@ -1,0 +1,1040 @@
+<template>
+  <div>
+    <view class="status-bar" :style="{height:statusheight + 'px'}"></view>
+    <view class="video" :style="{top:statusheight + 'px'}">
+      <!-- #ifdef APP-NVUE -->
+      <xk-video v-if="ggdata.image_text" ref="video" style="width:750rpx;height:220px" :autoPlay="false" :srcList="srcList"></xk-video>
+      <!-- #endif -->
+      <!-- #ifdef H5 -->
+      <video :initial-time="1" class="myvideo" @timeupdate="timevideo" ref="myvideo" id="videoid" :src="videodata.url" :show-center-play-btn="false"
+        :controls="true" :poster="videodata.image_text"></video>
+      <!-- #endif -->
+      <image src="/static/images/139.png" mode="aspectFit" class="shuiyin"></image>
+      <view class="lookvideo" v-if="islookvideo" :style="{top:statusheight + 'px'}">
+        <text class="no-play-text">免費觀看已用完</text>
+        <text class="no-play-text">推送1人即送VIP，可無限疊加</text>
+        <text class="no-play-text">開通會員享有更多優惠</text>
+        <view class="no-play-butt">
+          <text class="no-play-butt1" @tap="totuisong">去推送</text>
+          <text class="no-play-butt1" @tap="tovip">開通會員</text>
+        </view>
+      </view>
+      <view v-if="showgg" class="video-gg" :style="{top:statusheight + 'px'}">
+        <image v-if="ggdata" :src="ggdata.image_text" class="video-gg-img" @tap="openurl(ggdata.url)" placeholder="/static/images/51.png"></image>
+        <text class="video-gg-text" :style="{top:statusheight + 10 + 'px'}">{{s}}秒自動關閉</text>
+      </view>
+    </view>
+    <view class="tianchong" :style="{height:statusheight + 220 + 'px'}"></view>
+
+    <view class="notice-bar1">
+      <uni-notice-bar class="notice-bar" backgroundColor="#fff" color="#999999" :single="true" :scrollable="true"
+        showIcon="true" :speed="50" :text="gdt"></uni-notice-bar>
+    </view>
+    <view class="video-down-gg" v-if="ggindex">
+      <image :src="ggindex.image_text" class="video-down-gg-img" @tap="openurl(ggindex.url)"></image>
+      <text class="video-down-gg-text">廣告</text>
+    </view>
+    <view class="biaoti">
+      <text class="biaoti-title">{{videodata.title}}</text>
+      <!-- <image src="../../static/images/101.png" class="shoucang"></image> -->
+    </view>
+    <view class="tabbar-list">
+      <view class="tab-left">
+        <image @tap="dianzan" v-if="videodata.give == 0" src="../../static/images/125.png" class="tab-left-img"></image>
+        <image @tap="dianzan" v-else src="../../static/images/121.png" class="tab-left-img"></image>
+        <text class="tab-left-text">{{videodata.hits}}次喜歡</text>
+      </view>
+      <view class="tab-right" @tap="yijian">
+        <image src="../../static/images/135.png" class="tab-right-img"></image>
+        <text class="tab-right-text">意見回饋</text>
+      </view>
+      <view class="tab-left">
+        <image src="../../static/images/136.png" class="tab-left-img" @tap="openpopup()"></image>
+        <text class="tab-left-text">{{videodata.comments}}條評論</text>
+      </view>
+    </view>
+    <view class="xian"></view>
+    <view class="cnxh-title">
+      <text class="cnxh-text">猜你喜歡 </text>
+    </view>
+    <view v-for="(item,index) in cnxhlist" :key="index">
+      <view class="video-list">
+        <view class="video-item" v-for="(items,indexs) in item" :key="indexs" @tap="toinfo(items)">
+          <image class="video-image" :src="items.image_text" placeholder="/static/images/51.png"></image>
+          <text class="video-title">{{items.title}}</text>
+        </view>
+      </view>
+      <view class="video-down-gg" style="height: 200px;">
+        <image v-if="gglist[index%gglist.length]" :src="gglist[index%gglist.length].image_text" @tap="openurl(gglist[index%gglist.length].url)"
+          class="video-down-gg-img" style="height: 200px;"></image>
+        <text class="video-down-gg-text">廣告</text>
+      </view>
+    </view>
+    <uni-load-more :status="more"></uni-load-more>
+    <uni-popup type="bottom" ref="pinglun">
+      <view class="pinglun-popup">
+        <view class="pinglun-tab">
+          <view class="pinglun-tab-left">
+            <text class="pinglun-tab-left1">评论</text>
+            <text class="pinglun-tab-left2"></text>
+          </view>
+          <!-- <view class="pinglun-tab-right">
+            <text class="pinglun-tab-right1" :class="num == 1 ? 'gaoliang' : ''" @tap="qiehuan(1)">全部</text>
+            <text class="pinglun-tab-right1" :class="num == 2 ? 'gaoliang' : ''" @tap="qiehuan(2)">热门</text>
+            <text class="pinglun-tab-right1" :class="num == 3 ? 'gaoliang' : ''" @tap="qiehuan(3)">最新</text>
+          </view> -->
+        </view>
+        <scroll-view scroll-y="true" class="scrollheight" @scrolltolower="scrolldown">
+          <view class="pinglun-item" v-for="(item,index) in pinglunlist" :key="index">
+            <view class="item-left">
+              <view class="item-left-header">
+                <image :src="item.avator_image" class="item-left-header1"></image>
+              </view>
+              <view class="item-left-user">
+                <view class="item-left-user-top">
+                  <text class="item-left-user-top-name">{{item.name}}</text>
+                  <image class="item-left-user-top-img" v-if="item.level  ==  0" mode="aspectFit" src="/static/images/142.png"></image>
+                  <image class="item-left-user-top-img" v-if="item.level  ==  1" mode="aspectFit" src="/static/images/143.png"></image>
+                  <image class="item-left-user-top-img" v-if="item.level  ==  2" mode="aspectFit" src="/static/images/141.png"></image>
+
+                  <!-- <image src="../../static/images/111.png" class="item-left-user-top-img"></image> -->
+                </view>
+                <text class="item-left-user-text">{{item.content}}</text>
+                <!-- <text class="item-left-user-time">{{item.creat_time}}</text> -->
+              </view>
+            </view>
+            <view class="item-right">
+              <!-- <image src="../../static/images/109.png" class="item-right-img"></image> -->
+              <!-- <text class="item-right-text">0</text> -->
+            </view>
+          </view>
+          <uni-load-more :status="more1"></uni-load-more>
+          <view class="input-down"></view>
+          <view class="input-view" :style="{bottom:inputbottom + 'px'}">
+            <input v-model="pingluntext" type="text" placeholder="禁止留言聯繫方式，請發送私信" class="input-input" :adjust-position="false" />
+            <text @tap="topinglun" class="input-text">發送</text>
+          </view>
+        </scroll-view>
+
+      </view>
+    </uni-popup>
+    <image @tap.stop="toback" src="../../static/images/137.png" class="back-img" :style="{top:statusheight + 10 + 'px'}"></image>
+
+  </div>
+</template>
+
+<script>
+  import uniNoticeBar from '@/components/uni-notice-bar/uni-notice-bar.vue'
+  import uniPopup from '@/components/uni-popup/uni-popup.vue'
+  import lazy from '../../components/lazy-load.vue'
+  export default {
+    data() {
+      return {
+        statusheight: 0,
+        num: 1,
+        inputbottom: 0,
+        id: '',
+        url: getApp().globalData.url,
+        header: getApp().globalData.header,
+        videodata: [],
+        cnxhlist: [],
+        more: 'more',
+        more1: 'more',
+        gglist: [],
+        page: 1,
+        pinglunlist: [],
+        pingluntext: '',
+        ggindex: [],
+        s: 5,
+        time: '',
+        showgg: true,
+        ggdata: [],
+        srcList: [{
+          name: '標清',
+          url: ''
+        }],
+        gdt: '',
+        openurls: getApp().globalData.openurl,
+        islookvideo: false
+      }
+    },
+    onLoad(option) {
+      // console.log(option);
+      this.gdt = uni.getStorageSync("gundongtiao")
+      this.id = option.id
+      this.statusheight = uni.getSystemInfoSync().statusBarHeight
+      uni.onKeyboardHeightChange((e) => {
+        this.inputbottom = e.height
+        // console.log(e.height)
+      })
+      this.getvideo()
+      this.getggindex()
+      this.getggdata()
+    },
+    onReachBottom() {
+      this.more = 'loading'
+      this.getcnxh()
+    },
+    methods: {
+      timevideo(e){
+        if(e.detail.currentTime < 1){
+          var myvideo = uni.createVideoContext('videoid')
+          myvideo.seek(1)
+        }
+      },
+      yijian() {
+        if (uni.getStorageSync("usertoken")) {
+          uni.navigateTo({
+            url: "/pages/mine/yijian"
+          })
+        } else {
+          uni.showToast({
+            icon: "none",
+            title: "請登入"
+          })
+        }
+      },
+      toback(e) {
+        e.stopPropagation()
+        uni.navigateBack()
+      },
+      tovip() {
+        if (uni.getStorageSync("usertoken")) {
+          uni.navigateTo({
+            url: "/pages/mine/viphuiyuan"
+          })
+        } else {
+          uni.showToast({
+            icon: "none",
+            title: "請登入"
+          })
+        }
+
+      },
+      totuisong() {
+        if (uni.getStorageSync("usertoken")) {
+          uni.navigateTo({
+            url: "/pages/mine/fenxiang"
+          })
+        } else {
+          uni.showToast({
+            icon: "none",
+            title: "請登入"
+          })
+        }
+      },
+      openurl(url) {
+        this.openurls(url)
+      },
+      dianzan() {
+        if (uni.getStorageSync("usertoken")) {
+          uni.showLoading({
+            mask: true,
+            title: "請稍後"
+          })
+          uni.request({
+            url: this.url + "/api/Dvideo/thumbs",
+            method: "GET",
+            header: {
+              token: uni.getStorageSync("usertoken")
+            },
+            data: {
+              id: this.videodata.id
+            },
+            success: (res) => {
+              uni.hideLoading()
+              if (res.data.code == 200) {
+                uni.showToast({
+                  icon: "none",
+                  title: "點贊成功"
+                })
+                this.videodata.give = 1
+              } else {
+                uni.showToast({
+                  icon: "none",
+                  title: "点赞失败"
+                })
+              }
+            }
+          })
+        } else {
+          uni.showToast({
+            icon: "none",
+            title: "請登入"
+          })
+        }
+      },
+      getggdata() {
+        uni.request({
+          url: this.url + '/api/adv/others',
+          data: {
+            class: 0
+          },
+          success: (res) => {
+            this.ggdata = res.data.data
+            // console.log(res.data);
+          }
+        })
+      },
+      getggindex() {
+        uni.request({
+          url: this.url + "/api/adv/adv",
+          method: "GET",
+          data: {
+            class: 3,
+            limit: 999
+          },
+          success: (res) => {
+            var a = uni.getStorageSync("videoggindex")
+            console.log(a)
+            if (a === 0 || a > 0) {
+              if (a >= (res.data.data.length - 1)) {
+                uni.setStorageSync("videoggindex", 0)
+                this.ggindex = res.data.data[0]
+              } else {
+                a++
+                this.ggindex = res.data.data[a]
+                console.log(this.ggindex);
+                uni.setStorageSync("videoggindex", a)
+              }
+            } else {
+              uni.setStorageSync("videoggindex", 0)
+              this.ggindex = res.data.data[0]
+            }
+            // this.gglist = res.data.data
+            console.log(res.data)
+            console.log(this.ggindex);
+          }
+        })
+      },
+      topinglun() {
+        if (this.pingluntext == "") {
+          uni.showToast({
+            icon: "none",
+            title: "請輸入評論 "
+          })
+          return false
+        }
+        if (uni.getStorageSync("usertoken")) {
+          uni.showLoading({
+            mask: true,
+            title: "請稍後"
+          })
+          uni.request({
+            url: this.url + '/api/comment/addcomment',
+            method: "POST",
+            header: {
+              token: uni.getStorageSync("usertoken")
+            },
+            data: {
+              class: 3,
+              community_id: this.id,
+              content: this.pingluntext
+            },
+            success: (res) => {
+              uni.hideLoading()
+              uni.showToast({
+                icon: "none",
+                title: res.data.msg
+              })
+              if (res.data.code == 200) {
+                this.pingluntext = ""
+              }
+              // console.log(res.data);
+            }
+          })
+        } else {
+          uni.showToast({
+            icon: "none",
+            title: "請登入"
+          })
+        }
+
+      },
+      scrolldown() {
+        this.page++
+        this.more1 = 'loading'
+        this.openpopup()
+      },
+      openpopup() {
+        if (this.pinglunlist.length == 0) {
+          uni.showLoading({
+            mask: true,
+            title: "請稍後"
+          })
+        }
+        uni.request({
+          url: this.url + '/api/comment/video',
+          data: {
+            current: this.page,
+            every: 10,
+            id: this.id,
+            num: this.videodata.comments
+          },
+          success: (res) => {
+            uni.hideLoading()
+            if (res.data.data.length > 0) {
+              this.pinglunlist = this.pinglunlist.concat(res.data.data)
+              if (this.pinglunlist.length > 5) {
+                this.more1 = 'more'
+              } else {
+                this.more1 = 'noMore'
+              }
+            } else {
+              this.more1 = 'noMore'
+              this.page--
+            }
+
+            // console.log(res.data);
+          }
+        })
+        this.$refs.pinglun.open()
+      },
+      qiehuan(val) {
+        this.num = val
+      },
+      toinfo(item) {
+        // console.log(item);
+        uni.redirectTo({
+          url: "./videoinfo?id=" + item.id
+        })
+      },
+      getcnxh() {
+        uni.request({
+          url: this.url + '/api/Dvideo/like',
+          method: "POST",
+          data: {
+            limit: 10,
+            class: this.videodata.class
+          },
+          success: (res) => {
+            uni.hideLoading()
+            // console.log(res.data);
+            this.more = 'more'
+            this.cnxhlist.push(res.data.data)
+
+          }
+        })
+      },
+      startvideo() {
+        this.time = setInterval(() => {
+          this.s--
+          if (this.s == 0) {
+            if (!this.islookvideo) {
+              // #ifdef APP-NVUE
+           //   this.$refs.video.seek(20000)
+              this.srcList[0].url = this.videodata.url
+              this.$refs.video.setParams({
+                srcList: this.srcList,
+                title: this.videodata.title,
+                liveMode: false,
+              })
+              // this.$refs.video.play()
+              // #endif
+              // #ifdef H5
+              var myvideo = uni.createVideoContext('videoid')
+              // console.log(myvideo);
+              // this.$refs.myvideo.play()
+              myvideo.play()
+
+              // #endif
+
+            }
+            this.showgg = false
+            clearInterval(this.time)
+          }
+        }, 1000)
+      },
+      getlook() {
+        if (uni.getStorageSync("usertoken")) {
+          uni.request({
+            url: this.url + '/api/community/edit',
+            method: "POST",
+            data: {
+              class: 1
+            },
+            header: {
+              token: uni.getStorageSync("usertoken")
+            },
+            success: (res) => {
+              if (res.data.code == 200) {
+                this.islookvideo = false
+              } else {
+                this.islookvideo = true
+              }
+              this.startvideo()
+            }
+          })
+        } else {
+          uni.request({
+            url: this.url + '/api/yk/del',
+            method: "POST",
+            data: {
+              code: uni.getStorageSync("youkedata").code,
+              class: 1
+            },
+            success: (res) => {
+              if (res.data.code == 200) {
+                this.islookvideo = false
+              } else {
+                this.islookvideo = true
+              }
+              this.startvideo()
+            }
+          })
+        }
+      },
+      getvideo() {
+        uni.showLoading({
+          mask: true,
+          title: "請稍後"
+        })
+
+        if (uni.getStorageSync("usertoken")) {
+          var header = {
+            token: uni.getStorageSync("usertoken")
+          }
+        } else {
+          var header = {}
+        }
+        uni.request({
+          url: this.url + '/api/Dvideo/xq_video',
+          method: "POST",
+          header: header,
+          data: {
+            id: this.id
+          },
+          success: (res) => {
+            this.videodata = res.data.data
+            // console.log(this.srcList);
+
+            this.getlook()
+            this.getcnxh()
+            uni.request({
+              url: this.url + "/api/adv/adv",
+              method: "GET",
+              data: {
+                class: 2,
+                limit: 999
+              },
+              success: (res) => {
+                this.gglist = res.data.data
+                // console.log(res.data);
+              }
+            })
+            // console.log(res.data);
+            if (uni.getStorageSync("usertoken")) {
+              this.addlishi()
+            }
+
+          }
+        })
+      },
+      addlishi() {
+        uni.request({
+          url: this.url + '/api/Browse/add',
+          method: "POST",
+          data: {
+            videoid: this.id
+          },
+          header: {
+            token: uni.getStorageSync("usertoken")
+          },
+          success: () => {
+            // console.log(res.data);
+          }
+        })
+      },
+    },
+    components: {
+      uniNoticeBar,
+      uniPopup
+    },
+    onHide() {
+      uni.createVideoContext('videoid').pause()
+    }
+  }
+</script>
+
+<style>
+  .shuiyin {
+    position: absolute;
+    top: 0;
+    right: 20rpx;
+    width: 150rpx;
+    height: 60rpx;
+  }
+
+  .back-img {
+    position: fixed;
+    width: 30rpx;
+    height: 50rpx;
+    left: 20rpx;
+    z-index: 1000;
+  }
+
+  .no-play-butt1 {
+    margin: 20rpx 10rpx;
+    color: #fff;
+    border-width: 1rpx;
+    border-style: solid;
+    border-color: #fff;
+    border-radius: 100rpx;
+    font-size: 26rpx;
+    width: 200rpx;
+    height: 50rpx;
+    text-align: center;
+    line-height: 50rpx;
+  }
+
+  .no-play-butt {
+    /* #ifdef H5 */
+    display: flex;
+    /* #endif */
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .no-play-text {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 28rpx;
+    margin-bottom: 10rpx;
+  }
+
+  .lookvideo {
+    /* #ifdef H5 */
+    display: flex;
+    /* #endif */
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 750rpx;
+    position: fixed;
+    left: 0;
+    height: 220px;
+    z-index: 10;
+    background-color: #000000;
+  }
+
+  .video-gg-text {
+    position: fixed;
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 100rpx;
+    color: #fff;
+    font-size: 30rpx;
+    padding: 6rpx 20rpx;
+    right: 20rpx;
+  }
+
+  .video-gg {
+    width: 750rpx;
+    position: fixed;
+    left: 0;
+    height: 220px;
+    z-index: 20;
+  }
+
+  .video-gg-img {
+    width: 750rpx;
+    height: 220px;
+  }
+
+  .input-text {
+    font-size: 28rpx;
+    font-family: PingFangSC-Regular, PingFang SC;
+    font-weight: 400;
+    color: rgba(102, 102, 102, 1);
+  }
+
+  .input-input {
+    width: 614rpx;
+    height: 72rpx;
+    background-color: rgba(247, 247, 247, 1);
+    border-radius: 36rpx;
+    padding: 0 0 0 60rpx;
+    font-size: 24rpx;
+    font-family: PingFangSC-Regular, PingFang SC;
+    font-weight: 400;
+    color: rgba(151, 151, 151, 1);
+  }
+
+  .input-view {
+    position: fixed;
+    /* bottom: 0; */
+    left: 0;
+    width: 750rpx;
+    height: 132rpx;
+    /* #ifdef H5 */
+    display: flex;
+    /* #endif */
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20rpx;
+    background-color: #fff;
+  }
+
+  .input-down {
+    height: 132rpx;
+  }
+
+  .scrollheight {
+    height: 700rpx;
+  }
+
+  .item-left-user-time {
+    font-size: 20rpx;
+    font-family: PingFangSC-Regular, PingFang SC;
+    font-weight: 400;
+    color: rgba(153, 153, 153, 1);
+  }
+
+  .item-left-user-text {
+    font-size: 28rpx;
+    font-family: PingFangSC-Regular, PingFang SC;
+    font-weight: 400;
+    color: rgba(51, 51, 51, 1);
+    margin-bottom: 8rpx;
+    padding-bottom: 20rpx;
+    border-bottom-color: rgba(0, 0, 0, 0.07);
+    border-style: solid;
+    border-bottom-width: 1rpx;
+  }
+
+  .item-left-user-top-img {
+    width: 150rpx;
+    height: 40rpx;
+    margin-left: 8rpx;
+  }
+
+  .item-left-user-top-name {
+    font-size: 32rpx;
+    font-family: PingFangSC-Medium, PingFang SC;
+    font-weight: 500;
+    color: rgba(51, 51, 51, 1);
+  }
+
+  .item-left-user-top {
+    /* #ifdef H5 */
+    display: flex;
+    /* #endif */
+    flex-direction: row;
+    align-items: center;
+    margin-bottom: 12rpx;
+  }
+
+  .item-left-user {
+    width: 540rpx;
+  }
+
+  .item-left-header1 {
+    width: 80rpx;
+    height: 80rpx;
+    border-radius: 100rpx;
+
+  }
+
+  .item-left-header {
+    width: 80rpx;
+    height: 80rpx;
+    margin-right: 16rpx;
+  }
+
+  .item-left {
+    /* #ifdef H5 */
+    display: flex;
+    /* #endif */
+    align-items: center;
+    flex-direction: row;
+  }
+
+  .item-right-text {
+    font-size: 24rpx;
+    font-family: PingFangSC-Regular, PingFang SC;
+    font-weight: 400;
+    color: rgba(153, 153, 153, 1);
+  }
+
+  .item-right-img {
+    width: 36rpx;
+    height: 36rpx;
+    margin-right: 10rpx;
+  }
+
+  .item-right {
+    /* #ifdef H5 */
+    display: flex;
+    /* #endif */
+    flex-direction: row;
+    align-items: center;
+
+  }
+
+  .pinglun-item {
+    padding: 0 20rpx;
+    margin-bottom: 26rpx;
+    /* #ifdef H5 */
+    display: flex;
+    /* #endif */
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .gaoliang {
+    color: #FF6669;
+  }
+
+  .pinglun-tab-right1 {
+    margin: 0 12rpx;
+    font-size: 24rpx;
+    font-family: PingFangSC-Regular, PingFang SC;
+    font-weight: 400;
+    color: rgba(51, 51, 51, 1);
+  }
+
+  .pinglun-tab-right {
+    /* #ifdef H5 */
+    display: flex;
+    /* #endif */
+    flex-direction: row;
+    align-items: center;
+
+  }
+
+  .pinglun-tab-left2 {
+    font-size: 24rpx;
+    font-family: PingFangSC-Regular, PingFang SC;
+    font-weight: 400;
+    color: rgba(153, 153, 153, 1);
+  }
+
+  .pinglun-tab-left1 {
+    font-size: 32rpx;
+    font-family: PingFangSC-Semibold, PingFang SC;
+    font-weight: 600;
+    color: rgba(32, 32, 32, 1);
+  }
+
+  .pinglun-tab-left {
+    /* #ifdef H5 */
+    display: flex;
+    /* #endif */
+    flex-direction: row;
+    align-items: flex-end;
+
+  }
+
+  .pinglun-tab {
+    /* #ifdef H5 */
+    display: flex;
+    /* #endif */
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16rpx 20rpx 32rpx 20rpx;
+  }
+
+  .pinglun-popup {
+    width: 750rpx;
+    height: 800rpx;
+    background-color: #fff;
+  }
+
+  .video-title {
+    font-size: 28rpx;
+    font-family: PingFangSC-Regular, PingFang SC;
+    font-weight: 400;
+    color: rgba(51, 51, 51, 1);
+    lines: 1;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    margin: 8rpx 0 20rpx 0;
+    /* #ifdef H5 */
+    -o-text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    /* #endif */
+  }
+
+  .video-image {
+    width: 350rpx;
+    height: 232rpx;
+    border-radius: 12rpx;
+  }
+
+  .video-item {
+    width: 350rpx;
+  }
+
+  .video-list {
+    padding: 0 20rpx;
+    /* #ifdef H5 */
+    display: flex;
+    /* #endif */
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-between;
+  }
+
+  .cnxh-text {
+    border-left-width: 8rpx;
+    border-color: #F9D147;
+    border-style: solid;
+    padding-left: 16rpx;
+    font-size: 32rpx;
+    font-family: PingFangSC-Medium, PingFang SC;
+    font-weight: 500;
+    color: rgba(32, 32, 32, 1);
+  }
+
+  .cnxh-title {
+    padding: 16rpx 20rpx;
+  }
+
+  .xian {
+    width: 750rpx;
+    height: 16rpx;
+    /* background-color: #000000; */
+    background-color: rgba(245, 246, 248, 1);
+  }
+
+  .tab-right-text {
+    font-size: 24rpx;
+    font-family: PingFangSC-Regular, PingFang SC;
+    font-weight: 400;
+    color: rgba(153, 153, 153, 1);
+    margin-right: 12rpx;
+  }
+
+  .tab-right-img {
+    width: 36rpx;
+    height: 36rpx;
+    margin-right: 10rpx;
+  }
+
+  .tab-right {
+    /* #ifdef H5 */
+    display: flex;
+    /* #endif */
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .tab-left-text {
+    font-size: 24rpx;
+    font-family: PingFangSC-Regular, PingFang SC;
+    font-weight: 400;
+    color: rgba(153, 153, 153, 1);
+    margin: 0 36rpx 0 12rpx;
+  }
+
+  .tab-left {
+    /* #ifdef H5 */
+    display: flex;
+    /* #endif */
+    flex-direction: row;
+    align-items: center;
+
+  }
+
+  .tab-left-img {
+    width: 36rpx;
+    height: 36rpx;
+  }
+
+  .tabbar-list {
+    /* #ifdef H5 */
+    display: flex;
+    /* #endif */
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 26rpx 20rpx 24rpx 20rpx;
+  }
+
+  .biaoti-title {
+    font-size: 32rpx;
+    font-family: PingFangSC-Medium, PingFang SC;
+    font-weight: 500;
+    color: rgba(32, 32, 32, 1);
+    width: 600rpx;
+  }
+
+  .shoucang {
+    width: 42rpx;
+    height: 42rpx;
+  }
+
+  .biaoti {
+    /* #ifdef H5 */
+    display: flex;
+    /* #endif */
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10rpx 20rpx 16rpx 20rpx;
+  }
+
+  .video-down-gg-text {
+    position: absolute;
+    width: 108rpx;
+    height: 40rpx;
+    background-color: rgba(0, 0, 0, 1);
+    border-radius: 4rpx;
+    opacity: 0.53;
+    text-align: center;
+    line-height: 40rpx;
+    font-size: 24rpx;
+    font-family: PingFangSC-Regular, PingFang SC;
+    font-weight: 400;
+    color: rgba(255, 255, 255, 1);
+    bottom: 16rpx;
+    right: 16rpx;
+  }
+
+  .video-down-gg-img {
+    width: 710rpx;
+    height: 192rpx;
+  }
+
+  .video-down-gg {
+    position: relative;
+    width: 710rpx;
+    height: 192rpx;
+    margin: 0 20rpx 20rpx 20rpx;
+  }
+
+  .notice-bar1 {
+    /* padding: 18rpx 0 0 0; */
+    margin-bottom: -10;
+    background-color: #fff;
+  }
+
+  .tianchong {
+    width: 750rpx;
+  }
+
+  .myvideo {
+    width: 750rpx;
+    height: 220px;
+  }
+
+  .video {
+    width: 750rpx;
+    height: 220px;
+    position: fixed;
+    left: 0;
+    z-index: 999;
+  }
+
+  .status-bar {
+    width: 750rpx;
+    position: fixed;
+    top: 0;
+    left: 0;
+    background-color: #000;
+  }
+</style>

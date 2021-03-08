@@ -1,0 +1,1796 @@
+<template>
+  <view style="video-demo" :style="{height:windowheight + 'px'}">
+    <video v-if="videodata.direct_url" :src="videodata.direct_url" @play="playvideo" :autoplay="true" object-fit="cover"
+      :show-center-play-btn="false" :controls="false" class="myvideo" @error="error" @pause="pause" id="myvideo"></video>
+    <!-- <xk-video v-if="videodata.direct_url" :liveMode="true" :hidePlaybackRate="false" ref="video" class="myvideo" :autoPlay="true" :srcList="srcList"></xk-video> -->
+    <view class="guanggaobox" v-if="guanggaodata">
+      <image @tap="openurl(guanggaodata)" :src="guanggaodata.image_text" class="guanggao-image" mode="aspectFit"></image>
+    </view>
+    <view class="guanggaobox1" v-if="guanggaodata1">
+      <image @tap="openurl(guanggaodata1)" :src="guanggaodata1.image_text" class="guanggao-image" mode="aspectFit"></image>
+    </view>
+    <scroll-view scroll-y="true" class="chat-scroll" :scroll-top="todown" :scroll-into-view="scrollID" :scroll-with-animation="true">
+      <text class="chat-gg" ref="box">{{wenan}}</text>
+      <text class="chat-gg" ref="box1">{{wenan1}}</text>
+      <view class="chat-text" v-for="(item,index) in chatlist" :key="index" :ref="'scroll' + index" :id="'scroll' + index">
+        <view class="chat-right">
+          <view class="chat-right-dengji">
+            <image v-if="item.level <= 10" src="../../static/images/165.png" class="dengji-icon"></image>
+            <image v-else-if="item.level <= 20" src="../../static/images/166.png" class="dengji-icon"></image>
+            <image  v-else src="../../static/images/167.png" class="dengji-icon"></image>
+            <text class="dengji-text">{{item.level}}</text>
+          </view>
+          <view class="chat-right-logo">
+            <image src="../../static/images/168.png" v-if="item.logoicon == 1" class="logo-icon"></image>
+            <image src="../../static/images/169.png" v-else-if="item.logoicon == 2" class="logo-icon"></image>
+            <image src="../../static/images/170.png" v-else class="logo-icon"></image>
+            <text class="dengji-text">小猪社区</text>
+          </view>
+          <text class="chat-right-text2" style="color: #96D8F6;">{{item.name}}：</text>
+        </view>
+        <text class="chat-text-text">{{item.message}}</text>
+      </view>
+    </scroll-view>
+    <view class="add-box">
+      <view class="add2-box">
+        <view class="scroll-add-box" :style="{top:addtop + 'px'}">
+          <view class="chat-right1" v-for="(item,index) in addlist" :key="index" :style="{opacity:index == (addlist.length - 1) ? 1 : 0}">
+            <view class="chat-right1-dengji">
+              <image v-if="item.level <= 10" src="../../static/images/165.png" class="dengji-icon"></image>
+              <image v-else-if="item.level <= 20" src="../../static/images/166.png" class="dengji-icon"></image>
+              <image  v-else src="../../static/images/167.png" class="dengji-icon"></image>
+              <text class="dengji-text">{{item.level}}</text>
+            </view>
+            <!-- <text class="chat-right-text1" v-if="item.level <= 10" style="background-color: #FF6A6A;">LV.{{item.level}}</text>
+            <text class="chat-right-text1" v-else-if="item.level <= 20" style="background-color: #FFD16A;">LV.{{item.level}}</text>
+            <text class="chat-right-text1" v-else style="background-color: #6ABDFF;">LV.{{item.level}}</text> -->
+            <text class="chat-right-text2">{{item.name}}{{item.message}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+    <view class="gift-box">
+      <view class="gift2-box">
+        <view class="scroll-gift-box" :style="{top:gifttop + 'px'}">
+          <view class="gift-right1" v-for="(item,index) in giftlist" :key="index">
+            <image :src="item.image" class="gift-item"></image>
+            <view class="gift-center">
+              <text class="gift-center-text1">{{item.name}}</text>
+              <text class="gift-center-text2">{{item.message1}}</text>
+            </view>
+            <image v-if="item.message == 0" src="../../static/images/158.png" mode="aspectFit" class="gift-image"></image>
+            <image v-else-if="item.message == 1" src="../../static/images/154.png" mode="aspectFit" class="gift-image"></image>
+            <image v-else-if="item.message == 2" src="../../static/images/155.png" mode="aspectFit" class="gift-image"></image>
+            <image v-else-if="item.message == 3" src="../../static/images/156.png" mode="aspectFit" class="gift-image"></image>
+            <image v-else-if="item.message == 4" src="../../static/images/152.png" mode="aspectFit" class="gift-image"></image>
+            <image v-else-if="item.message == 5" src="../../static/images/157.png" mode="aspectFit" class="gift-image"></image>
+            <image v-else-if="item.message == 6" src="../../static/images/153.png" mode="aspectFit" class="gift-image"></image>
+            <image v-else-if="item.message == 7" src="../../static/images/159.png" mode="aspectFit" class="gift-image"></image>
+          </view>
+        </view>
+      </view>
+    </view>
+    <view class="pinglun-box">
+      <scroll-view scroll-x="true" class="pinglun-scroll">
+        <text class="pinglun-scroll-text" @tap="sendtext(item)" v-for="(item,index) in danmulist" :key="index">{{item}}</text>
+      </scroll-view>
+    </view>
+    <view class="down-tab">
+      <view class="down-tab-left">
+        <image src="../../static/images/149.png" class="down-tab-left-image"></image>
+        <input type="text" class="down-tab-left-text" :focus="focus" placeholder="聊点什么…" :adjust-position="false"
+          v-model="player_text" />
+      </view>
+      <view class="down-tab-right">
+        <image src="../../static/images/164.png" class="down-tab-right-img" @tap="opengame"></image>
+        <image src="../../static/images/147.png" class="down-tab-right-img" @tap="openliwu"></image>
+        <image src="../../static/images/146.png" class="down-tab-right-img" @tap="back"></image>
+      </view>
+    </view>
+    <view class="input-down" :style="{bottom:input_bottom + 'px'}">
+      <input type="text" placeholder="聊点什么..." :focus="focus" class="input-input" :adjust-position="false" v-model="player_text" />
+      <text class="input-send" @tap="add">发送</text>
+    </view>
+    <view class="header" :style="{top:statusheight + 10 + 'px'}">
+      <view class="user-header">
+        <view class="header-left">
+          <image v-if="userdata" :src="userdata.image_text" class="user-image" @tap="openuser"></image>
+        </view>
+        <view class="header-center">
+          <text class="center-down-text">{{userdata.name}}</text>
+          <view class="center-down">
+            <image src="../../static/images/145.png" class="center-down-img"></image>
+            <text style="color: #fff;font-size: 26rpx;">{{redu}}</text>
+          </view>
+        </view>
+        <view class="header-right">
+          <image src="../../static/images/144.png" class="guanzhu-but" @tap="guanzhu"></image>
+        </view>
+      </view>
+      <scroll-view scroll-x="true" class="guibin-scroll">
+        <image @tap="openguibin(item)" :src="item.image_text" class="guibin-image" v-for="(item,index) in guibindata"
+          :key="index"></image>
+      </scroll-view>
+      <view class="guibin-count">
+        <text class="guibin-count-text">{{videodata.vip}}</text>
+        <text class="guibin-count-text">贵宾</text>
+      </view>
+    </view>
+    <uni-popup ref="userinfo">
+      <view class="user-popup">
+        <view class="user-top">
+          <text class="user-top-left">举报</text>
+          <text class="user-top-right" @tap="closepopup">X</text>
+        </view>
+        <image :src="userinfo.image_text" class="user-popup-image"></image>
+        <text class="user-popup-name">{{userinfo.name}}</text>
+        <text class="user-popup-detail">{{userinfo.content}}</text>
+        <view class="user-popup-count">
+          <text class="user-popup-count-left">房间号 {{videodata.room_number}}</text>
+          <text class="user-popup-count-center">|</text>
+          <text class="user-popup-count-right">粉丝 {{userinfo.fans}}</text>
+        </view>
+        <view class="view-dengji">
+          <view class="dengji-popup">
+            <image src="../../static/images/127.png" class="dengji-image"></image>
+            <view class="dengji-right">
+              <text class="dengji-right-text">主播等级</text>
+              <text class="dengji-right-text">{{userinfo.level}}</text>
+            </view>
+          </view>
+        </view>
+        <view class="popup-down">
+          <view class="popup-down-left">
+            <view class="dengji-right">
+              <text class="popup-down-left-text">他的成就</text>
+              <text class="popup-down-left-text">暂无</text>
+            </view>
+            <image src="../../static/images/127.png" class="dengji-image"></image>
+          </view>
+          <view class="popup-down-right">
+            <view class="dengji-right">
+              <text class="popup-down-right-text">礼物墙</text>
+              <text class="popup-down-right-text" v-if="userinfo.direct">共点亮{{userinfo.direct.gift}}个</text>
+            </view>
+            <image src="../../static/images/127.png" class="dengji-image"></image>
+          </view>
+        </view>
+        <!-- <view class="popup-biaoqian">
+          <text class="popup-biaoqian-text" v-for="(a,b) in 4" :key="b">多才多艺</text>
+        </view> -->
+      </view>
+    </uni-popup>
+    <uni-popup ref="guibininfo">
+      <view class="user-popup">
+        <view class="user-top">
+          <text class="user-top-left"></text>
+          <text class="user-top-right" @tap="closepopup">X</text>
+        </view>
+        <image :src="guibininfo.image_text" class="user-popup-image"></image>
+        <text class="user-popup-name">{{guibininfo.name}}</text>
+        <text class="user-popup-detail">这个人很懒，没有留下什么东西</text>
+        <view class="view-dengji">
+          <view class="dengji-popup">
+            <image src="../../static/images/127.png" class="dengji-image"></image>
+            <view class="dengji-right">
+              <text class="dengji-right-text">用户等级</text>
+              <text class="dengji-right-text">{{guibininfo.level}}</text>
+            </view>
+          </view>
+        </view>
+        <view class="popup-down">
+          <view class="popup-down-left">
+            <view class="dengji-right">
+              <text class="popup-down-left-text">他的成就</text>
+              <text class="popup-down-left-text">暂无</text>
+            </view>
+            <image src="../../static/images/127.png" class="dengji-image"></image>
+          </view>
+        </view>
+      </view>
+    </uni-popup>
+    <uni-popup type="bottom" ref="game">
+      <view class="popup-game">
+        <view class="popup-game-item" v-for="(item,index) in gamelist" :key="index" @tap="openurl(item)">
+          <image :src="item.image_text" class="game-image"></image>
+          <text class="game-text">{{item.name}}</text>
+        </view>
+      </view>
+    </uni-popup>
+    <uni-popup type="bottom" ref="liwu">
+      <view class="popup-liwu" v-if="liwulist.length > 0">
+        <text class="liwu-title">礼物</text>
+        <view class="liwu-list">
+          <view class="liwu-item border-top border-right" @tap="sendliwu(0)">
+            <image src="/static/images/158.png" class="liwu-image" mode="aspectFit"></image>
+            <text class="liwu-text">小飞机</text>
+            <view class="liwu-price">
+              <image src="../../static/images/151.png" mode="aspectFit" class="huobi-img"></image>
+              <text class="price-text">{{liwulist[0].price}}</text>
+            </view>
+          </view>
+          <view class="liwu-item border-top border-right" @tap="sendliwu(1)">
+            <image src="../../static/images/154.png" class="liwu-image" mode="aspectFit"></image>
+            <text class="liwu-text">666</text>
+            <view class="liwu-price">
+              <image src="../../static/images/151.png" mode="aspectFit" class="huobi-img"></image>
+              <text class="price-text">{{liwulist[1].price}}</text>
+            </view>
+          </view>
+          <view class="liwu-item border-top border-right" @tap="sendliwu(2)">
+            <image src="../../static/images/155.png" class="liwu-image" mode="aspectFit"></image>
+            <text class="liwu-text">啪啪啪</text>
+            <view class="liwu-price">
+              <image src="../../static/images/151.png" mode="aspectFit" class="huobi-img"></image>
+              <text class="price-text">{{liwulist[2].price}}</text>
+            </view>
+          </view>
+          <view class="liwu-item border-top" @tap="sendliwu(3)">
+            <image src="../../static/images/156.png" class="liwu-image" mode="aspectFit"></image>
+            <text class="liwu-text">大红包</text>
+            <view class="liwu-price">
+              <image src="../../static/images/151.png" mode="aspectFit" class="huobi-img"></image>
+              <text class="price-text">{{liwulist[3].price}}</text>
+            </view>
+          </view>
+          <view class="liwu-item border-top border-right  border-bottom" @tap="sendliwu(4)">
+            <image src="../../static/images/152.png" class="liwu-image" mode="aspectFit"></image>
+            <text class="liwu-text">杜蕾斯</text>
+            <view class="liwu-price">
+              <image src="../../static/images/151.png" mode="aspectFit" class="huobi-img"></image>
+              <text class="price-text">{{liwulist[4].price}}</text>
+            </view>
+          </view>
+          <view class="liwu-item border-top border-right  border-bottom" @tap="sendliwu(5)">
+            <image src="../../static/images/157.png" class="liwu-image" mode="aspectFit"></image>
+            <text class="liwu-text">鲜花</text>
+            <view class="liwu-price">
+              <image src="../../static/images/151.png" mode="aspectFit" class="huobi-img"></image>
+              <text class="price-text">{{liwulist[5].price}}</text>
+            </view>
+          </view>
+          <view class="liwu-item border-top border-right  border-bottom" @tap="sendliwu(6)">
+            <image src="../../static/images/153.png" class="liwu-image" mode="aspectFit"></image>
+            <text class="liwu-text">520</text>
+            <view class="liwu-price">
+              <image src="../../static/images/151.png" mode="aspectFit" class="huobi-img"></image>
+              <text class="price-text">{{liwulist[6].price}}</text>
+            </view>
+          </view>
+          <view class="liwu-item border-top border-bottom" @tap="sendliwu(7)">
+            <image src="../../static/images/159.png" class="liwu-image" mode="aspectFit"></image>
+            <text class="liwu-text">威力粽</text>
+            <view class="liwu-price">
+              <image src="../../static/images/151.png" mode="aspectFit" class="huobi-img"></image>
+              <text class="price-text">{{liwulist[7].price}}</text>
+            </view>
+          </view>
+        </view>
+        <view class="liwu-down">
+          <view class="liwu-down-left" @tap="tobuy">
+            <image src="../../static/images/151.png" mode="aspectFit" class="huobi-img"></image>
+            <text class="liwu-price-text">{{money}}</text>
+            <image src="../../static/images/81.png" mode="aspectFit" class="liwu-more"></image>
+          </view>
+          <text class="liwu-down-right">赠送</text>
+        </view>
+      </view>
+    </uni-popup>
+    <image src="/static/WechatIMG15.png" :fade-show="false" mode="aspectFill" class="fengmian-image" :style="{height:windowheight + 'px'}"
+      v-if="showfengmian || isxiabo"></image>
+    <view class="xiabo" :style="{height:windowheight + 'px'}" v-if="isxiabo">
+      <text class="xiabo-close" :style="{top:statusheight + 10 + 'px'}" @tap="back">X</text>
+      <view class="xiabo-box">
+        <image :src="userdata.image_text" mode="aspectFit" class="xiabo-image"></image>
+        <view class="xiabo-view">
+          <text class="xiabo-name">{{userdata.name}}</text>
+          <text class="xiabo-dengji">LV{{userdata.level}}</text>
+        </view>
+        <text class="xiabo-tips">直播已结束</text>
+        <!-- <text class="xiabo-time">上次直播时间：2020-01-08 21:00:00</text>
+        <view class="xiabo-tab">
+          <view class="xiabo-tab-item">
+            <text class="xiabo-tab-item-text">1.1万</text>
+            <text class="xiabo-tab-item-text">人气值</text>
+          </view>
+          <view class="xiabo-tab-item">
+            <text class="xiabo-tab-item-text">1:00:22</text>
+            <text class="xiabo-tab-item-text">直播时长</text>
+          </view>
+        </view> -->
+      </view>
+    </view>
+  </view>
+</template>
+
+<script>
+  import uniPopup from '@/components/uni-popup/uni-popup.vue'
+  // #ifdef APP-NVUE
+  const dom = weex.requireModule('dom')
+  // #endif
+
+  export default {
+    data() {
+      return {
+        windowheight: 0,
+        statusheight: 0,
+        todown: 0,
+
+        input_bottom: -50,
+        focus: false,
+        player_text: '',
+        id: '',
+        url: getApp().globalData.url,
+        header: getApp().globalData.header,
+        websockerurl: getApp().globalData.websockerurl,
+        videodata: [],
+        userdata: [],
+        userinfo: [],
+        guibininfo: [],
+        guibindata: [],
+        socketTask: null,
+        client_id: '',
+        wenan: '',
+        wenan1: '',
+        showfengmian: true,
+        chatlist: [],
+        addlist: [],
+        giftlist: [],
+        isxiabo: false,
+        gamelist: [],
+        liwulist: [],
+        openurls: getApp().globalData.openurl,
+        addtop: 40,
+        gifttop: 100,
+        redu: 0,
+        money: '0.00',
+        srcList: [{
+          name: '標清',
+          url: ''
+        }],
+        guanggaodata:{},
+        time:'',
+        danmulist:['裤子都脱了你让我看这个','撸管一时爽，一直花堂一直爽','我完事了，你们呢','趴下，屁股翘高','真的很想插进去爽一下'],
+        guanggaodata1:[],
+        scrollID:''
+      }
+    },
+    onShow() {
+      if (uni.getStorageSync("usertoken")) {
+        this.getuserinfo()
+      }
+
+    },
+    onLoad(option) {
+      this.id = option.id
+      this.fengmian = option.img
+      this.getguanggao()
+      this.windowheight = uni.getSystemInfoSync().windowHeight
+      this.statusheight = uni.getSystemInfoSync().statusBarHeight
+      uni.onKeyboardHeightChange((e) => {
+        if (e.height == 0) {
+          this.focus = false
+          this.input_bottom = -50
+        } else {
+          this.focus = true
+          this.input_bottom = e.height
+        }
+
+        // console.log(e.height);
+      })
+      this.getvideo()
+
+      this.getwenan()
+    },
+    onUnload() {
+      uni.closeSocket()
+      clearInterval(this.time)
+    },
+    components: {
+      uniPopup
+    },
+    onReady() {
+      this.wenan = '正在连接聊天服务器...'
+      // #ifdef APP-NVUE
+      dom.getComponentRect(this.$refs.box, option => {
+        // console.log(option.size)
+        this.todown = this.todown + option.size.height + 10
+      })
+      dom.getComponentRect(this.$refs.box1, option => {
+        // console.log(option.size)
+        this.todown = this.todown + option.size.height + 10
+      })
+      // #endif
+    },
+    methods: {
+      closepopup(){
+        this.$refs.guibininfo.close()
+        this.$refs.userinfo.close()
+      },
+      sendtext(str){
+        if(this.client_id){
+          this.player_text = str
+          this.add()
+        }else{
+          uni.showToast({
+            icon:"none",
+            title:"聊天服务器未连接成功"
+          })
+        }
+        
+      },
+      getguanggao(){
+        uni.request({
+          url:this.url + '/direct/adv',
+          success: (res) => {
+            this.guanggaodata = res.data.data
+          }
+        })
+        uni.request({
+          url:this.url + '/direct/dadv',
+          success: (res) => {
+            console.log(res.data);
+            this.guanggaodata1 = res.data.data
+          }
+        })
+      },
+      getuserinfo() {
+        uni.request({
+          url: this.url + '/api/user/personal',
+          header: {
+            token: uni.getStorageSync("usertoken")
+          },
+          success: (res) => {
+            this.money = res.data.data.money
+            // console.log(res);
+          }
+        })
+      },
+      tobuy() {
+        if (uni.getStorageSync("usertoken")) {
+          uni.navigateTo({
+            url: "./buy"
+          })
+        } else {
+          uni.showToast({
+            icon: "none",
+            title: "請登入"
+          })
+        }
+      },
+      sendliwu(index) {
+        if (uni.getStorageSync("usertoken")) {
+          uni.showLoading({
+            mask: true,
+            title: '請稍後'
+          })
+          uni.request({
+            url: this.url + '/gift/buy/' + this.liwulist[index].price,
+            method: "POST",
+            header: {
+              token: uni.getStorageSync("usertoken")
+            },
+            data: {
+              room_number: this.videodata.room_number,
+              giftid: index
+            },
+            success: (res) => {
+              uni.hideLoading()
+              console.log(res.data);
+              if (res.data.code == 200) {
+                uni.showToast({
+                  icon: "none",
+                  title: res.data.data.msg
+                })
+                this.getuserinfo()
+              } else {
+                uni.showToast({
+                  icon: "none",
+                  title: res.data.msg
+                })
+              }
+            }
+          })
+
+        } else {
+          uni.showToast({
+            icon: "none",
+            title: "請登入"
+          })
+        }
+      },
+      openurl(item) {
+        this.openurls(item.url)
+      },
+      openliwu() {
+        if (this.liwulist.length > 0) {
+          this.$refs.liwu.open()
+          return false
+        }
+        uni.showLoading({
+          mask: true,
+          title: "請稍後"
+        })
+        uni.request({
+          url: this.url + '/direct/gifts',
+          success: (res) => {
+            uni.hideLoading()
+            this.liwulist = res.data.data
+            console.log(res.data);
+            this.$refs.liwu.open()
+          }
+        })
+
+      },
+      playvideo(e) {
+        this.showfengmian = false
+        this.isxiabo = false
+      },
+      guanzhu() {
+        if (uni.getStorageSync("usertoken")) {
+          uni.showLoading({
+            mask: true,
+            title: '請稍後'
+          })
+          uni.request({
+            url: this.url + '/follow/add',
+            method: "POST",
+            header: {
+              token: uni.getStorageSync("usertoken")
+            },
+            data: {
+              anchorid: this.userdata.id
+            },
+            success: (res) => {
+              uni.hideLoading()
+              uni.showToast({
+                icon: "none",
+                title: res.data.msg
+              })
+              // console.log(res.data);
+            }
+          })
+        } else {
+          uni.showToast({
+            icon: "none",
+            title: "請登入"
+          })
+        }
+      },
+      openguibin(item) {
+        this.guibininfo = item
+        // console.log(item);
+        this.$refs.guibininfo.open()
+      },
+      getwenan() {
+        uni.request({
+          url: this.url + '/direct/copywriting',
+          success: (res) => {
+            this.wenan1 = res.data.data
+            // console.log(res.data.data);
+          }
+        })
+      },
+      getwebsocket() {
+        uni.connectSocket({
+          url: this.websockerurl,
+          success: (res) => {
+            console.log(res);
+          },
+          fail: (res) => {
+            console.log(res);
+          }
+        })
+        uni.onSocketOpen((res) => {
+          console.log(res);
+        })
+        uni.onSocketError((err) => {
+          this.wenan = '连接聊天服务器失败'
+        })
+        uni.onSocketMessage((res) => {
+          if (JSON.parse(res.data).type == 'init') {
+            // console.log(JSON.parse(res.data));
+            this.client_id = JSON.parse(res.data).client_id
+            if(this.client_id){
+              clearInterval(this.time)
+              uni.request({
+                url: this.url + '/api/Webstock/group_add',
+                method: "POST",
+                header: {
+                  token: uni.getStorageSync("usertoken") ? uni.getStorageSync("usertoken") : ''
+                },
+                data: {
+                  client_id: this.client_id,
+                  room_number: this.videodata.room_number
+                },
+                success: (res) => {
+                  this.wenan = '连接聊天服务器成功'
+                  console.log('连接聊天服务器成功');
+                }
+              })
+            }else{
+              this.wenan = '连接聊天服务器失败'
+              // this.sendtime()
+            }
+          } else {
+            if (JSON.parse(res.data).type == 'add') {
+              // console.log(JSON.parse(res.data));
+              this.addlist.push(JSON.parse(res.data))
+              this.addtop = this.addtop - 40
+            } else {
+              if (JSON.parse(res.data).type == 'gift') {
+                // console.log(JSON.parse(res.data));
+                var obj = JSON.parse(res.data)
+                if (obj.message == 0) {
+                  obj.message1 = '送出一个小飞机'
+                } else if (obj.message == 1) {
+                  obj.message1 = '送出一个666'
+                } else if (obj.message == 2) {
+                  obj.message1 = '送出一个啪啪啪'
+                } else if (obj.message == 3) {
+                  obj.message1 = '送出一个大红包'
+                } else if (obj.message == 4) {
+                  obj.message1 = '送出一个杜蕾斯'
+                } else if (obj.message == 5) {
+                  obj.message1 = '送出一个鲜花'
+                } else if (obj.message == 6) {
+                  obj.message1 = '送出一个520'
+                } else if (obj.message == 7) {
+                  obj.message1 = '送出一个威力粽'
+                }
+                this.gifttop = this.gifttop - 50
+                this.giftlist.push(obj)
+              } else if (JSON.parse(res.data).type == 'send') {
+                var icon = Math.floor(Math.random()*4);
+                var obj = JSON.parse(res.data)
+                obj.logoicon = icon
+                this.chatlist.push(obj)
+                var id = 'scroll' + (this.chatlist.length - 1)
+                setTimeout(() => {
+                  // #ifdef APP-NVUE
+                  const result = dom.getComponentRect(this.$refs[id][0], option => {
+                    if(uni.getSystemInfoSync().platform == "ios"){
+                      this.scrollID = 'scroll' + (this.chatlist.length - 1)
+                    }else{
+                      this.todown = this.todown + option.size.height  + 16
+                    }
+                  })
+                  // #endif
+                }, 100)
+              } else {
+                this.redu = JSON.parse(res.data).num
+              }
+            }
+          }
+          console.log(JSON.parse(res.data));
+        })
+      },
+      sendtime(){
+        this.time = setInterval(() => {
+          uni.sendSocketMessage({
+            data:"client",
+            success: (res) => {
+              console.log(res);
+            }
+          })
+        },500)
+        
+      },
+      getvideo() {
+        // uni.showLoading({
+        //   mask: true,
+        //   title: "請稍後"
+        // })
+        uni.request({
+          url: this.url + '/direct/read/' + this.id,
+          success: (res) => {
+            // uni.hideLoading()
+            // this.showfengmian = false
+
+            this.videodata = res.data.data
+            this.userdata = res.data.data.anchor
+            this.guibindata = res.data.data.vips
+            this.redu = this.videodata.online
+            this.srcList = [{
+              name: '標清',
+              url: this.videodata.direct_url
+            }]
+            // console.log(this.videodata.direct_url);
+            this.getwebsocket()
+            console.log(res.data.data);
+          }
+        })
+      },
+      back() {
+        uni.navigateBack()
+      },
+      opengame() {
+        if (this.gamelist.length > 0) {
+          this.$refs.game.open()
+          return false
+        }
+        uni.showLoading({
+          mask: true,
+          title: "請稍後"
+        })
+        uni.request({
+          url: this.url + '/direct/app',
+          method: "GET",
+          success: (res) => {
+            uni.hideLoading()
+            this.$refs.game.open()
+            this.gamelist = res.data.data
+            // console.log(res.data);
+          }
+        })
+      },
+      openuser() {
+        uni.showLoading({
+          mask: true,
+          title: "請稍後"
+        })
+        uni.request({
+          url: this.url + '/anchor/read/' + this.userdata.id,
+          success: (res) => {
+            uni.hideLoading()
+            this.userinfo = res.data.data
+            this.$refs.userinfo.open()
+            // console.log(res.data.data);
+          }
+        })
+      },
+      pause() {
+        uni.createVideoContext('myvideo').play()
+      },
+      error(e) {
+        this.isxiabo = true
+        console.log(e);
+        return false
+        uni.showModal({
+          content: "资源加载错误，请重试",
+          confirmText: "重试",
+          success: (res) => {
+            if (res.confirm) {
+              uni.createVideoContext('myvideo').play()
+            }
+            if (res.cancel) {
+              uni.navigateBack()
+            }
+          }
+        })
+      },
+      add() {
+        if (uni.getStorageSync("usertoken")) {
+          if(!this.client_id){
+            uni.showToast({
+              icon:"none",
+              title:"聊天服务器未连接成功"
+            })
+            return false
+          }
+          uni.showLoading({
+            mask: true,
+            title: "请稍后"
+          })
+          uni.request({
+            url: this.url + '/api/Webstock/group_send',
+            method: "POST",
+            header: {
+              token: uni.getStorageSync("usertoken")
+            },
+            data: {
+              room_number: this.videodata.room_number,
+              client_id: this.client_id,
+              message: this.player_text,
+              type: 'add'
+            },
+            success: (res) => {
+              uni.hideLoading()
+              console.log(res.data);
+              if (res.data.code == 200) {
+                uni.showToast({
+                  icon: "none",
+                  title: res.data.data.msg
+                })
+                this.player_text = ""
+                uni.hideKeyboard()
+              } else {
+                uni.showToast({
+                  icon: "none",
+                  title: res.data.msg
+                })
+              }
+            }
+          })
+        } else {
+          uni.showToast({
+            icon: "none",
+            title: "請登入"
+          })
+        }
+      }
+    }
+  }
+</script>
+
+<style>
+  .guanggaobox1{
+    position: fixed;
+    bottom: 150rpx;
+    right: 25rpx;
+    width: 200rpx;
+    height: 250rpx;
+  }
+  .pinglun-scroll-text{
+    font-size: 28rpx;
+    border-radius: 100rpx;
+    background-color: rgba(0,0,0,0.3);
+    color: #fff;
+    padding: 10rpx 20rpx;
+    margin: 0 10rpx;
+  }
+  .pinglun-scroll{
+    width: 710rpx;
+    height: 100rpx;
+    
+    /* #ifdef H5 */
+    display: flex;
+    /* #endif */
+    align-items: center;
+    flex-direction: row;
+  }
+  .pinglun-box{
+    position: fixed;
+    bottom: 100rpx;
+    width: 750rpx;
+    padding: 0 20rpx;
+    height: 100rpx;
+    
+  }
+  .logo-icon{
+    position: absolute;
+    top: 0;
+    left: 0;
+    width:130rpx;
+    height:32rpx;
+  }
+  .chat-right-logo{
+    /* #ifdef H5 */
+    display: flex;
+    /* #endif */
+    flex-direction: row;
+    align-items: center;
+    position: relative;
+    width:130rpx;
+    height:32rpx;
+  }
+  .chat-right-dengji{
+    /* #ifdef H5 */
+    display: flex;
+    /* #endif */
+    align-items: center;
+    flex-direction: row;
+    width:76rpx;
+    height:32rpx;
+    position: relative;
+  }
+  .dengji-text{
+    font-size:21rpx;
+    color: #fff;
+    margin-left: 38rpx;
+  }
+  .dengji-icon{
+    position: absolute;
+    top: 0;
+    left: 0;
+    width:70rpx;
+    height:32rpx;
+  }
+  .chat-right1-dengji{
+    /* #ifdef H5 */
+    display: flex;
+    /* #endif */
+    align-items: center;
+    flex-direction: row;
+    width:70rpx;
+    height:32rpx;
+    position: relative;
+  }
+  .guanggao-image{
+    width: 200rpx;
+    height: 200rpx;
+  }
+  .guanggaobox{
+    position: fixed;
+    top: 150rpx;
+    right: 25rpx;
+    width: 200rpx;
+    height: 250rpx;
+  }
+  .gift-center {
+    width: 160rpx;
+  }
+
+  .gift-center-text1 {
+    font-size: 24rpx;
+    color: #fff;
+  }
+
+  .gift-center-text2 {
+    font-size: 22rpx;
+    color: #C0C0C0;
+  }
+
+  .gift-image {
+    width: 50rpx;
+    height: 50rpx;
+  }
+
+  .gift-item {
+    width: 50rpx;
+    height: 50rpx;
+    border-radius: 100rpx;
+  }
+
+  .gift-right1 {
+    width: 300rpx;
+    height: 40px;
+    margin-bottom: 10px;
+    /* #ifdef H5 */
+    display: flex;
+    /* #endif */
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 10rpx;
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 100rpx;
+  }
+
+  .scroll-gift-box {
+    position: absolute;
+    left: 0;
+    width: 400rpx;
+    transition-property: top;
+    transition-duration: 500;
+  }
+
+  .gift2-box {
+    width: 400rpx;
+    height: 100px;
+    position: relative;
+  }
+
+  .gift-box {
+    /* background-color: #fff; */
+    position: fixed;
+    left: 20rpx;
+    bottom: 700rpx;
+    width: 400rpx;
+    height: 100px;
+  }
+
+  .chat-right1 {
+    height: 40px;
+    /* #ifdef H5 */
+    display: flex;
+    /* #endif */
+    align-items: center;
+    flex-direction: row;
+    border-radius: 20rpx;
+    background-color: rgba(0, 0, 0, 0.2);
+    padding: 0 10rpx;
+  }
+
+  .add2-box {
+    width: 500rpx;
+    height: 40px;
+    position: relative;
+  }
+
+  .scroll-add-box {
+    position: absolute;
+    left: 0;
+    transition-property: top;
+    transition-duration: 500;
+  }
+
+  .xiabo-tab-item-text {
+    font-size: 32rpx;
+    font-weight: 500;
+    color: rgba(206, 206, 206, 1);
+  }
+
+  .xiabo-tab-item {
+    margin: 0 125rpx;
+    /* #ifdef H5 */
+    display: flex;
+    /* #endif */
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .xiabo-tab {
+    /* #ifdef H5 */
+    display: flex;
+    /* #endif */
+    flex-direction: row;
+
+  }
+
+  .xiabo-time {
+    font-size: 28rpx;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 1);
+    margin-bottom: 32rpx;
+  }
+
+  .xiabo-tips {
+    font-size: 40rpx;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 1);
+    margin-bottom: 12rpx;
+  }
+
+  .xiabo-dengji {
+    text-align: center;
+    line-height: 40rpx;
+
+    width: 100rpx;
+    height: 40rpx;
+    background-color: rgba(255, 209, 106, 1);
+    border-radius: 20rpx;
+    /* border:2px solid rgba(255,255,255,1); */
+    border-width: 2rpx;
+    border-style: solid;
+    border-color: rgba(255, 255, 255, 1);
+    font-size: 28rpx;
+    color: rgba(255, 255, 255, 1);
+  }
+
+  .xiabo-name {
+    font-size: 28rpx;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 1);
+    margin-right: 20rpx;
+  }
+
+  .xiabo-view {
+    /* #ifdef H5 */
+    display: flex;
+    /* #endif */
+    flex-direction: row;
+    align-items: center;
+    margin-bottom: 48rpx;
+  }
+
+  .xiabo-image {
+    width: 176rpx;
+    height: 176rpx;
+    border-width: 4rpx;
+    border-style: solid;
+    border-color: rgba(255, 255, 255, 1);
+    border-radius: 100rpx;
+    margin-bottom: 32rpx;
+    /* border:4px solid rgba(255,255,255,1); */
+  }
+
+  .xiabo-box {
+    /* #ifdef H5 */
+    display: flex;
+    /* #endif */
+    flex-direction: column;
+    align-items: center;
+    margin-top: 250rpx;
+  }
+
+  .xiabo-close {
+    width: 100rpx;
+    height: 100rpx;
+    text-align: center;
+    line-height: 100rpx;
+    color: #fff;
+    font-size: 50rpx;
+    position: fixed;
+    right: 50rpx;
+  }
+
+  .xiabo {
+    width: 750rpx;
+    background-color: rgba(49, 49, 49, 0.3);
+    position: fixed;
+    top: 0;
+    left: 0;
+  }
+
+  .liwu-down-right {
+    background-color: #858585;
+    width: 136rpx;
+    height: 48rpx;
+    text-align: center;
+    line-height: 48rpx;
+    font-size: 30rpx;
+    color: #fff;
+    border-radius: 100rpx;
+  }
+
+  .liwu-more {
+    width: 11rpx;
+    height: 20rpx;
+  }
+
+  .liwu-price-text {
+    font-size: 28rpx;
+    font-weight: 500;
+    color: rgba(249, 249, 249, 1);
+    margin: 0 10rpx;
+  }
+
+  .liwu-down-left {
+    /* #ifdef H5 */
+    display: flex;
+    /* #endif */
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .liwu-down {
+    /* #ifdef H5 */
+    display: flex;
+    /* #endif */
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 30rpx;
+    padding: 0 32rpx;
+  }
+
+  .liwu-image {
+    width: 148rpx;
+    height: 102rpx;
+  }
+
+  .liwu-price {
+    /* #ifdef H5 */
+    display: flex;
+    /* #endif */
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .price-text {
+    font-size: 24rpx;
+    font-weight: 400;
+    color: rgba(102, 102, 102, 1);
+  }
+
+  .liwu-text {
+    font-size: 24rpx;
+    font-weight: 400;
+    color: rgba(255, 255, 255, 1);
+  }
+
+  .border-top {
+    border-top-width: 2rpx;
+    border-color: #979797;
+    border-style: solid;
+  }
+
+  .border-right {
+    border-right-width: 2rpx;
+    border-color: #979797;
+    border-style: solid;
+  }
+
+  .border-left {
+    border-left-width: 2rpx;
+    border-color: #979797;
+    border-style: solid;
+  }
+
+  .border-bottom {
+    border-bottom-width: 2rpx;
+    border-color: #979797;
+    border-style: solid;
+  }
+
+  .huobi-img {
+    width: 24rpx;
+    height: 24rpx;
+  }
+
+  .liwu-item {
+    width: 186rpx;
+    height: 198rpx;
+    /* #ifdef H5 */
+    display: flex;
+    /* #endif */
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .liwu-list {
+    /* #ifdef H5 */
+    display: flex;
+    /* #endif */
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-top: 44rpx;
+  }
+
+  .liwu-title {
+    width: 80rpx;
+    font-size: 32rpx;
+    font-weight: 500;
+    color: rgba(249, 249, 249, 1);
+    border-style: solid;
+    border-color: #F55493;
+    border-bottom-width: 6rpx;
+    padding: 20rpx 0 10rpx 0;
+    margin: 0 32rpx;
+    text-align: center;
+  }
+
+  .popup-liwu {
+    width: 750rpx;
+    height: 632rpx;
+    background-color: rgba(14, 14, 14, 1);
+    border-radius: 28rpx;
+  }
+
+  .add-box {
+    position: fixed;
+    bottom: 200rpx;
+    left: 20rpx;
+    background-color: rgba(0, 0, 0, 0);
+    width: 500rpx;
+    height: 40px;
+    /* text-overflow: hidden; */
+    /* #ifdef H5 */
+    display: flex;
+    /* #endif */
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .fengmian-image {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 750rpx;
+    /* will-change: transform; */
+    background-color: #000000;
+    z-index:999;
+    /* filter: blur(10px); */
+  }
+
+  .game-text {
+    font-size: 28rpx;
+    font-weight: 400;
+    color: rgba(51, 51, 51, 1);
+    lines: 1;
+    text-overflow: ellipsis;
+    width: 124rpx;
+  }
+
+  .game-image {
+    width: 124rpx;
+    height: 124rpx;
+    border-radius: 20rpx;
+  }
+
+  .popup-game-item {
+    width: 186rpx;
+    /* #ifdef H5 */
+    display: flex;
+    /* #endif */
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 30rpx;
+    lines: 1;
+    text-overflow: ellipsis;
+  }
+
+  .popup-game {
+
+    /* #ifdef H5 */
+    display: flex;
+    /* #endif */
+    flex-wrap: wrap;
+    align-items: center;
+    flex-direction: row;
+    width: 750rpx;
+    padding: 50rpx 0;
+    background-color: rgba(255, 255, 255, 1);
+    border-radius: 28rpx;
+  }
+
+  .popup-biaoqian-text {
+
+    text-align: center;
+    line-height: 44rpx;
+    width: 116rpx;
+    height: 44rpx;
+    background-color: rgba(241, 241, 241, 1);
+    border-radius: 4rpx;
+    font-size: 22rpx;
+    font-weight: 400;
+    color: rgba(102, 102, 102, 1);
+    margin: 0 6rpx;
+  }
+
+  .popup-biaoqian {
+    width: 504rpx;
+    /* #ifdef H5 */
+    display: flex;
+    /* #endif */
+    flex-direction: row;
+    align-items: center;
+    margin-top: 30rpx;
+  }
+
+  .popup-down-right-text {
+    font-size: 22rpx;
+    font-weight: 400;
+    color: rgba(106, 129, 52, 1);
+    margin: 4rpx 0;
+  }
+
+  .popup-down-left-text {
+    font-size: 22rpx;
+    font-weight: 400;
+    color: rgba(65, 141, 239, 1);
+    margin: 4rpx 0;
+  }
+
+  .popup-down-right {
+    /* #ifdef H5 */
+    display: flex;
+    /* #endif */
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    width: 240rpx;
+    height: 116rpx;
+    background-color: rgba(210, 225, 156, 1);
+    border-radius: 8rpx;
+    padding: 0 16rpx;
+  }
+
+  .popup-down-left {
+    padding: 0 16rpx;
+    /* #ifdef H5 */
+    display: flex;
+    /* #endif */
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    width: 240rpx;
+    height: 116rpx;
+    background-color: rgba(207, 228, 255, 1);
+    border-radius: 8rpx;
+  }
+
+  .popup-down {
+    margin-top: 24rpx;
+    /* #ifdef H5 */
+    display: flex;
+    /* #endif */
+    align-items: center;
+    flex-direction: row;
+    justify-content: space-between;
+    width: 504rpx;
+
+  }
+
+  .view-dengji {
+    width: 504rpx;
+    /* #ifdef H5 */
+    display: flex;
+    /* #endif */
+    flex-direction: row;
+    justify-content: space-between;
+  }
+
+  .dengji-right-text {
+    font-size: 22rpx;
+    font-weight: 400;
+    color: rgba(255, 255, 255, 1);
+  }
+
+  .dengji-image {
+    width: 40rpx;
+    height: 40rpx;
+    margin-right: 20rpx;
+  }
+
+  .dengji-popup {
+    /* #ifdef H5 */
+    display: flex;
+    /* #endif */
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    width: 200rpx;
+    height: 88rpx;
+    background-color: rgba(254, 203, 61, 1);
+    border-radius: 8rpx;
+    margin-top: 44rpx;
+  }
+
+  .user-popup-count-center {
+    font-size: 24rpx;
+    font-weight: 400;
+    color: rgba(32, 32, 32, 1);
+    margin: 0 10rpx;
+  }
+
+  .user-popup-count-right {
+    width: 200rpx;
+    text-align: left;
+    font-size: 24rpx;
+    font-weight: 400;
+    color: rgba(32, 32, 32, 1);
+  }
+
+  .user-popup-count-left {
+    width: 200rpx;
+    text-align: right;
+    font-size: 24rpx;
+    font-weight: 400;
+    color: rgba(32, 32, 32, 1);
+  }
+
+  .user-popup-count {
+    margin-top: 10rpx;
+    /* #ifdef H5 */
+    display: flex;
+    /* #endif */
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .user-popup-detail {
+    font-size: 24rpx;
+    font-weight: 400;
+    color: rgba(153, 153, 153, 1);
+    margin-top: 10rpx;
+  }
+
+  .user-popup-name {
+    margin-top: 10rpx;
+    font-size: 28rpx;
+    font-weight: 400;
+    color: rgba(32, 32, 32, 1);
+  }
+
+  .user-popup-image {
+    width: 130rpx;
+    height: 130rpx;
+    border-radius: 100rpx;
+  }
+
+  .user-top-right {
+    font-size: 24rpx;
+    font-weight: 400;
+    color: rgba(102, 102, 102, 1);
+  }
+
+  .user-top-left {
+    font-size: 24rpx;
+    font-weight: 400;
+    color: rgba(102, 102, 102, 1);
+  }
+
+  .user-top {
+    width: 504rpx;
+    /* #ifdef H5 */
+    display: flex;
+    /* #endif */
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .user-popup {
+    /* #ifdef H5 */
+    display: flex;
+    /* #endif */
+    flex-direction: column;
+    align-items: center;
+    width: 600rpx;
+    /* height:750rpx; */
+    background-color: rgba(255, 255, 255, 1);
+    border-radius: 24rpx;
+    padding: 24rpx 48rpx 48rpx 48rpx;
+  }
+
+  .input-input {
+    width: 500rpx;
+    height: 88rpx;
+    font-size: 32rpx;
+  }
+
+  .input-down {
+    width: 750rpx;
+    height: 50px;
+    background-color: #fff;
+    position: fixed;
+    left: 0;
+    /* #ifdef H5 */
+    display: flex;
+    /* #endif */
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20rpx;
+  }
+
+  .input-send {
+    background-color: #F0AD4E;
+    font-size: 30rpx;
+    color: #fff;
+    border-radius: 100rpx;
+    width: 100rpx;
+    height: 50rpx;
+    text-align: center;
+    line-height: 50rpx;
+  }
+
+  .bottom {
+    width: 450rpx;
+    height: 10rpx;
+  }
+
+  .chat-right {
+    /* #ifdef H5 */
+    display: flex;
+    /* #endif */
+    align-items: center;
+    flex-direction: row;
+    margin-bottom: 10rpx;
+  }
+
+  .chat-right-text2 {
+    font-size: 28rpx;
+    font-weight: 500;
+    color: #F6EA96;
+    margin-left: 10rpx;
+  }
+
+  .chat-right-text1 {
+    width: 76rpx;
+    height: 30rpx;
+    text-align: center;
+    line-height: 30rpx;
+    background-color: rgba(238, 117, 254, 1);
+    border-radius: 15rpx;
+    border-width: 2rpx;
+    border-style: solid;
+    border-color: #fff;
+    font-size: 20rpx;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 1);
+  }
+
+  .chat-gg {
+    font-size: 30rpx;
+    font-weight: 400;
+    color: #ffa000;
+    flex-wrap: wrap;
+    width: 450rpx;
+    margin-bottom: 10px;
+    line-height: 40rpx;
+  }
+
+  .chat-text {
+    /* #ifdef H5 */
+    display: flex;
+    /* #endif */
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+    /* background-color: rgba(49, 49, 49, 0.3); */
+    padding:0 10px;
+    border-radius: 12rpx;
+    width: 450rpx;
+  }
+
+  .chat-text-text {
+    font-size: 26rpx;
+    font-weight: 400;
+    color: #fff;
+    flex-wrap: wrap;
+    width: 360rpx;
+    /* word-wrap: break-word; */
+  }
+
+  .chat-scroll {
+    position: fixed;
+    height: 400rpx;
+    width: 450rpx;
+    bottom: 270rpx;
+    left: 20rpx;
+  }
+
+  .down-tab-left-text {
+    width: 300rpx;
+    font-size: 26rpx;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 1);
+  }
+
+  .down-tab-left-image {
+    width: 32rpx;
+    height: 32rpx;
+    margin-right: 10rpx;
+    margin-left: 30rpx;
+  }
+
+  .down-tab-left {
+    width: 424rpx;
+    height: 64rpx;
+    background-color: rgba(49, 49, 49, 1);
+    border-radius: 32rpx;
+    opacity: 0.72;
+    margin-left: 20rpx;
+    /* #ifdef H5 */
+    display: flex;
+    /* #endif */
+    align-items: center;
+    flex-direction: row;
+    /* justify-content: center; */
+  }
+
+  .down-tab {
+    position: fixed;
+    width: 750rpx;
+    bottom: 26rpx;
+    /* #ifdef H5 */
+    display: flex;
+    /* #endif */
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .down-tab-right {
+    /* #ifdef H5 */
+    display: flex;
+    /* #endif */
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .down-tab-right-img {
+    width: 72rpx;
+    height: 72rpx;
+    margin-right: 20rpx;
+  }
+
+  .guibin-count-text {
+    font-size: 20rpx;
+    font-family: PingFangSC-Regular, PingFang SC;
+    font-weight: 400;
+    color: rgba(255, 255, 255, 1);
+  }
+
+  .guibin-count {
+    width: 94rpx;
+    height: 68rpx;
+    background-color: rgba(33, 33, 33, 1);
+    border-radius: 34rpx;
+    opacity: 0.58;
+    /* #ifdef H5 */
+    display: flex;
+    /* #endif */
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+  }
+
+  .guibin-image {
+    width: 68rpx;
+    height: 68rpx;
+    border-radius: 100rpx;
+    border-width: 2rpx;
+    border-style: solid;
+    border-color: #fff;
+    margin-right: 14rpx;
+
+  }
+
+  .guibin-scroll {
+    /* #ifdef H5 */
+    display: flex;
+    white-space: nowrap;
+    /* #endif */
+    align-items: center;
+    flex-direction: row;
+    width: 300rpx;
+    margin-left: 10rpx;
+  }
+
+  .center-down-text {
+    width: 130rpx;
+    font-size: 24rpx;
+    color: #fff;
+    lines: 1;
+    text-overflow: ellipsis;
+  }
+
+  .center-down-img {
+    width: 20rpx;
+    height: 26rpx;
+    margin-right: 4rpx;
+  }
+
+  .center-down {
+    /* #ifdef H5 */
+    display: flex;
+    /* #endif */
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .guanzhu-but {
+    width: 60rpx;
+    height: 60rpx;
+    margin-right: 4rpx;
+  }
+
+  .user-image {
+    width: 68rpx;
+    height: 68rpx;
+    border-radius: 100rpx;
+    border-width: 2rpx;
+    border-style: solid;
+    border-color: #fff;
+    margin-left: 2rpx;
+  }
+
+  .user-header {
+    width: 270rpx;
+    height: 68rpx;
+    background-color: rgba(33, 33, 33, 1);
+    border-radius: 34rpx;
+    opacity: 0.69;
+    /* #ifdef H5 */
+    display: flex;
+    /* #endif */
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .header {
+    position: fixed;
+    /* #ifdef H5 */
+    display: flex;
+    /* #endif */
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    width: 750rpx;
+    padding: 0 20rpx;
+  }
+
+  .video-demo {
+    /* #ifdef H5 */
+    display: flex;
+    /* #endif */
+    /* background-color: #000; */
+    /* align-items: center; */
+
+  }
+
+  .myvideo {
+    width: 750rpx;
+    flex: 1;
+  }
+</style>

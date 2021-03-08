@@ -1,0 +1,124 @@
+<template>
+  <view>
+    <swiper :style="{height:windowheight + 'px'}" class="swiper" @change="changeswiper">
+      <swiper-item v-for="(item,index) in images" :key="index">
+        <view class="swiper-item">
+          <image :style="{height:windowheight + 'px'}" :src="item" class="image"></image>
+        </view>
+      </swiper-item>
+    </swiper>
+    <!-- <view class="dots">
+      <text v-for="(item,index) in 4" :key="index" :class="index == num ? 'dots-text gaoliang' : 'dots-text'"></text>
+    </view> -->
+    <view class="jinto" v-if="isshow">
+      <text @tap="jintu" class="jinto-text"></text>
+    </view>
+  </view>
+</template>
+
+<script>
+  export default {
+    data() {
+      return {
+        num: 0,
+        isshow: false,
+        windowheight: 0,
+        images: [
+          '../../static/1.png',
+          '../../static/2.png',
+          '../../static/3.png',
+          '../../static/4.png'
+        ]
+      };
+    },
+    onLoad() {
+      
+      this.windowheight = uni.getSystemInfoSync().windowHeight
+    },
+    methods: {
+      jintu() {
+        uni.reLaunch({
+          url: "./first"
+        })
+      },
+      changeswiper(e) {
+        this.num = e.detail.current
+        if (this.num == 3) {
+          this.isshow = true
+        } else {
+          this.isshow = false
+        }
+        // console.log(e.detail.current);
+      }
+    }
+  }
+</script>
+
+<style lang="scss">
+  .jinto {
+    position: fixed;
+    bottom:120rpx;
+    left: 0;
+    width: 750rpx;
+    /* #ifdef H5 */
+    display: flex;
+    /* #endif */
+    flex-direction: row;
+    justify-content: center;
+    z-index: 50;
+
+  }
+
+  .jinto-text {
+    width: 250rpx;
+    height: 150rpx;
+    // border-width: 2rpx;
+    // border-style: solid;
+    // border-color: #999;
+    // border: 2rpx solid #000;
+    font-size: 32rpx;
+    text-align: center;
+    line-height: 80rpx;
+    // background-color: #fff;
+  }
+
+  .dots {
+    width: 750rpx;
+    /* #ifdef H5 */
+    display: flex;
+    /* #endif */
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    bottom:100rpx;
+    left: 0;
+    z-index: 20;
+
+  }
+
+  .dots-text {
+    width: 20rpx;
+    height: 20rpx;
+    border-radius: 100rpx;
+    background-color: rgba(0, 0, 0, 0.3);
+    margin: 0 10rpx;
+  }
+
+  .gaoliang {
+    background-color: rgba(0, 0, 0, 0.7);
+  }
+
+  .swiper {
+    width: 750rpx;
+    // flex: 1;
+    // background-color: #000;
+    // height: 100vh;
+  }
+
+  .image {
+    width: 750rpx;
+    background-color: #000;
+    // height: 100vh;
+  }
+</style>

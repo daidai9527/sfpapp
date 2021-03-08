@@ -1,0 +1,483 @@
+{
+  "pages": [
+    {
+      "path": "pages/start/qidongtu",
+      "style": {}
+    }, {
+      "path": "pages/start/kaiping",
+      "style": {}
+    },
+    {
+      "path": "pages/start/first",
+      "style": {}
+    },
+    {
+      "path": "pages/player/buy",
+      "style": {
+        "navigationBarTitleText": "",
+        "navigationStyle": "default",
+        "navigationBarBackgroundColor":"#FAAE19",
+        "navigationBarTextStyle":"white"
+      }
+    },
+    {
+      "path": "pages/notice/notice",
+      "style": {
+        "navigationBarTitleText": "娱乐中心",
+        "navigationStyle": "default",
+        "navigationBarBackgroundColor":"#6B4E6E",
+        "navigationBarTextStyle":"white"
+      }
+    },
+    {
+      "path": "pages/player/addplayer",
+      "style": {
+        "navigationBarTitleText": "主播认证",
+        "navigationStyle": "default"
+      }
+    }, {
+      "path": "pages/start/start",
+      "style": {}
+    }, {
+      "path": "pages/index/index",
+      "style": {
+        "navigationBarTitleText": "首頁"
+      }
+    },
+    {
+      "path": "pages/player/player",
+      "style": {}
+    },
+    {
+      "path": "pages/player/video",
+      "style": {
+        "navigationBarTextStyle": "white",
+        "app-plus": {
+          "softinputMode": "adjustResize",
+          "backgroundColor":"#000"
+        }
+      }
+    },
+    {
+      "path": "pages/mine/duihuan",
+      "style": {
+        "navigationBarTitleText": "兑换会员",
+        "navigationStyle": "default"
+      }
+    },
+    {
+      "path": "pages/mine/yijian",
+      "style": {
+        "navigationBarTitleText": "意見回饋",
+        "navigationStyle": "default"
+      }
+    },
+    {
+      "path": "pages/mine/about",
+      "style": {
+        "navigationBarTitleText": "關於社區"
+
+      }
+    },
+    {
+      "path": "pages/video/guishu",
+      "style": {
+        "navigationBarTitleText": "专题分类",
+        "navigationStyle": "default"
+
+      }
+    },
+    {
+      "path": "pages/mine/myguanzhu",
+      "style": {
+        "navigationBarTitleText": "我的關注",
+        "navigationStyle": "default"
+      }
+    },
+    {
+      "path": "pages/mine/zaixian",
+      "style": {
+        "navigationBarTitleText": "線上客服",
+        "navigationStyle": "default"
+      }
+    },
+    {
+      "path": "pages/index/gonggao",
+      "style": {
+        "navigationStyle": "custom",
+        "app-plus": {
+          "animationDuration": 200,
+          "animationType": "fade-in",
+          "backgroundColor": "rgba(0,0,0,0)",
+          "background": "transparent",
+          "popGesture": "none"
+        }
+      }
+    },
+    {
+      "path": "pages/index/pingxia",
+      "style": {
+        "navigationStyle": "custom",
+        "app-plus": {
+          "animationDuration": 200,
+          "animationType": "fade-in",
+          "backgroundColor": "rgba(0,0,0,0)",
+          "background": "transparent",
+          "popGesture": "none"
+        }
+      }
+    },
+
+    {
+      "path": "pages/mine/viphuiyuan",
+      "style": {
+        "navigationBarTitleText": "vip會員"
+      }
+    },
+    {
+      "path": "pages/video/videoinfo",
+      "style": {
+        "navigationBarTitleText": "視頻详情",
+        "navigationStyle": "custom",
+        "navigationBarTextStyle": "white",
+        "app-plus": {
+          "softinputMode": "adjustResize"
+        }
+      }
+    },
+    {
+      "path": "pages/userinfo/userinfo",
+      "style": {
+        "navigationBarTitleText": "用户详情",
+        "app-plus": {
+          "titleNView": {
+            "type": "transparent"
+          }
+        }
+      }
+    },
+    {
+      "path": "pages/index/uploadtuwen",
+      "style": {
+        "navigationBarTitleText": "上传图文",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/video/cilianjieinfo",
+      "style": {
+        "navigationBarTitleText": "磁链接详情",
+        "navigationStyle": "custom",
+        "app-plus": {
+          "softinputMode": "adjustResize"
+        }
+      }
+    },
+    {
+      "path": "pages/index/uploadduanwen",
+      "style": {
+        "navigationBarTitleText": "上传短文",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/index/uploadwenda",
+      "style": {
+        "navigationBarTitleText": "上传问答",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/index/uploadvideo",
+      "style": {
+        "navigationBarTitleText": "上传視頻",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/index/tuweninfo",
+      "style": {
+        "navigationBarTitleText": "图文详情",
+        "navigationStyle": "custom",
+        "app-plus": {
+          "softinputMode": "adjustResize"
+        }
+      }
+    },
+    {
+      "path": "pages/index/videoinfo",
+      "style": {
+        "navigationBarTitleText": "視頻详情",
+        "navigationStyle": "custom",
+        "app-plus": {
+          "softinputMode": "adjustResize"
+        }
+      }
+    },
+    {
+      "path": "pages/index/wendainfo",
+      "style": {
+        "navigationBarTitleText": "问答详情",
+        "navigationStyle": "custom",
+        "app-plus": {
+          "softinputMode": "adjustResize"
+        }
+      }
+    },
+    {
+      "path": "pages/index/duanweninfo",
+      "style": {
+        "navigationBarTitleText": "短文详情",
+        "navigationStyle": "custom",
+        "app-plus": {
+          "softinputMode": "adjustResize"
+        }
+      }
+    },
+    {
+      "path": "pages/index/seach",
+      "style": {
+        "navigationBarTitleText": "首页蒐索",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/video/seach",
+      "style": {
+        "navigationBarTitleText": "首页蒐索",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/video/authorinfo",
+      "style": {
+        "navigationBarTitleText": "作者詳情",
+        "app-plus": {
+          "titleNView": {
+            "type": "transparent"
+          }
+        }
+      }
+    },
+    {
+      "path": "pages/mine/userinfo",
+      "style": {
+        "navigationBarTitleText": "個人資訊",
+        "navigationStyle": "default"
+      }
+    },
+    {
+      "path": "pages/mine/tofenxiang",
+      "style": {
+        "navigationBarTitleText": "推廣分享獲取永久會員",
+        // #ifdef APP-VUE
+        "navigationStyle": "default",
+        // #endif
+        "navigationBarBackgroundColor": "#FFCB2F",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/mine/fenxiang",
+      "style": {
+        "navigationBarTitleText": "代理賺錢",
+        "navigationStyle": "default",
+        "app-plus": {
+          "titleNView": {
+            "buttons": [{
+              "text": "分享",
+              "fontSize": "14"
+            }]
+          }
+        }
+      }
+    },
+    {
+      "path": "pages/mine/tixian",
+      "style": {
+        "navigationBarTitleText": "體現",
+        "navigationStyle": "default"
+      }
+    },
+    {
+      "path": "pages/mine/yinhangka",
+      "style": {
+        "navigationBarTitleText": "綁定銀行卡",
+        "navigationStyle": "default",
+        "app-plus": {
+          "titleNView": {
+            "buttons": [{
+              "text": "提交",
+              "fontSize": "15px"
+            }]
+          }
+        }
+      }
+    },
+    {
+      "path": "pages/mine/zhifubao",
+      "style": {
+        "navigationBarTitleText": "綁定支付寶",
+        "navigationStyle": "default",
+        "app-plus": {
+          "titleNView": {
+            "buttons": [{
+              "text": "提交",
+              "fontSize": "15px"
+            }]
+          }
+        }
+      }
+    },
+    {
+      "path": "pages/mine/qianbao",
+      "style": {
+        "navigationBarTitleText": "我的錢包",
+        "navigationStyle": "default"
+      }
+    },
+    {
+      "path": "pages/mine/renwu",
+      "style": {
+        "navigationBarTitleText": "任務中心",
+        "navigationStyle": "default"
+      }
+    },
+    {
+      "path": "pages/mine/kefu",
+      "style": {
+        "navigationBarTitleText": "在綫客服",
+        "navigationStyle": "default",
+        "app-plus": {
+          "softinputMode": "adjustResize"
+        }
+      }
+    },
+    {
+      "path": "pages/video/video",
+      "style": {
+        "navigationBarTitleText": "視頻"
+      }
+    },
+    {
+      "path": "pages/small/small",
+      "style": {
+        "navigationBarTitleText": "抖啪",
+        "navigationBarTextStyle": "white",
+        "app-plus": {
+          "softinputMode": "adjustResize"
+        }
+      }
+    },
+    {
+      "path": "pages/notice/notice",
+      "style": {
+        "navigationBarTitleText": "娛樂",
+        "navigationStyle": "default",
+        "navigationBarBackgroundColor": "#fff"
+      }
+    },
+    {
+      "path": "pages/mine/mine",
+      "style": {
+        "navigationBarTitleText": "我的"
+      }
+    },
+    {
+      "path": "pages/login/wangji",
+      "style": {
+        "navigationStyle": "default",
+        "navigationBarBackgroundColor": "#fff"
+      }
+    },
+    {
+      "path": "pages/login/zhuce",
+      "style": {
+        "navigationStyle": "default",
+        "navigationBarBackgroundColor": "#fff"
+      }
+    },
+    {
+      "path": "pages/login/login",
+      "style": {
+        "navigationStyle": "default",
+        "navigationBarBackgroundColor": "#fff"
+      }
+    }
+  ],
+  "globalStyle": {
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "",
+    "navigationBarBackgroundColor": "#F8F8F8",
+    "backgroundColor": "#F8F8F8",
+    "navigationStyle": "custom",
+    "app-plus": {
+      "bounce": "none"
+    }
+  },
+  "tabBar": {
+    "backgroundColor": "#fff",
+    "borderStyle": "black",
+    "color": "#CECECE",
+    "selectedColor": "#666",
+    "iconWidth": "22px",
+    "list": [{
+        "pagePath": "pages/index/index",
+        "text": "首頁",
+        "selectedIconPath": "static/images/10.png",
+        "iconPath": "static/images/1.png"
+      },
+      {
+        "pagePath": "pages/video/video",
+        "text": "視頻",
+        "selectedIconPath": "static/images/6.png",
+        "iconPath": "static/images/3.png"
+      },
+      
+      // #ifdef APP-VUE
+	  /*
+      {
+        "pagePath": "pages/player/player",
+        "text": "直播",
+        "selectedIconPath": "static/images/160.png",
+        "iconPath": "static/images/161.png"
+      },
+      */
+      {
+        "pagePath": "pages/small/small",
+        "text": "抖啪",
+        "selectedIconPath": "static/images/7.png",
+        "iconPath": "static/images/2.png"
+      },
+      // #endif
+      // #ifdef H5
+	  /*
+      {
+
+        "pagePath": "pages/notice/notice",
+        "text": "娛樂",
+        "selectedIconPath": "static/images/06.png",
+        "iconPath": "static/images/05.png"
+      },
+	  */
+      // #endif
+      
+      {
+        "pagePath": "pages/mine/mine",
+        "text": "我的",
+        "selectedIconPath": "static/images/8.png",
+        "iconPath": "static/images/4.png"
+      }
+    ]
+  },
+	"condition" : { //模式配置，仅开发期间生效
+		"current": 0, //当前激活的模式(list 的索引项)
+		"list": [
+			{
+				"name": "", //模式名称
+				"path": "", //启动页面，必选
+				"query": "" //启动参数，在页面的onLoad函数里面得到
+			}
+		]
+	}
+}

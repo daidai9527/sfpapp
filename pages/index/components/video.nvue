@@ -1,0 +1,583 @@
+<template>
+  <view class="shequ-photo">
+    <view class="shequ-header" @tap="videoinfo">
+      <view class="shequ-header-left" @tap.stop="touserinfo">
+        <view class="header-user">
+          <image mode="aspectFill" :autoBitmapRecycle="false" class="header-user-image" :src="items.avatar_text"
+            placeholder="/static/images/51.png"></image>
+          <image src="/static/images/124.png" class="user-image-vip"></image>
+        </view>
+        <view class="header-userinfo">
+          <view class="userinfo">
+            <text class="user-name">{{items.name}}</text>
+            <image class="user-new" v-if="items.publisher.level  ==  0" mode="aspectFit" src="/static/images/142.png"></image>
+            <image class="user-new" v-if="items.publisher.level  ==  1" mode="aspectFit" src="/static/images/143.png"></image>
+            <image class="user-new" v-if="items.publisher.level  ==  2" mode="aspectFit" src="/static/images/141.png"></image>
+            <image class="user-vip" src="/static/images/52.png"></image>
+          </view>
+          <!-- <image class="user-old" src="/static/images/67.png"></image> -->
+        </view>
+      </view>
+      <view class="shequ-header-right">
+        <text class="shequ-header-right1">啪啪學院</text>
+        <text class="shequ-header-right2">@</text>
+      </view>
+      <!-- <image class="shequ-header-right" src="../../static/images/46.png"></image> -->
+    </view>
+    <view class="item-text" @tap="videoinfo">
+      <text class="item-text-content">{{items.title}}</text>
+    </view>
+    <view class="myvideo">
+      <!-- #ifdef H5 -->
+      <!-- <yy-video-player class="myvideo-item" :auto-play="false" :url="items.video" :poster="items.video_text"
+        :danmu-list="[]" :show-back-btn="false"></yy-video-player>  -->
+      <video :show-center-play-btn="false" :src="items.video" @timeupdate="timevideo" :controls="true" class="myvideo-item"
+        id="myvideos"></video>
+      <!-- #endif -->
+      <!-- #ifdef APP-NVUE -->
+      <xk-video ref="video" style="width:750rpx;height:500rpx" :autoPlay="false" :srcList="srcList"></xk-video>
+      <!-- <image v-if="isshow" :src="items.video_text" placeholder="/static/images/51.png" mode="aspectFill" class="fengmian"
+        @tap="playvideo"></image>
+      <image v-if="isshow" src="/static/images/31.png" class="play-img" @tap="playvideo"></image> -->
+      <!-- #endif -->
+      <image src="/static/images/139.png" mode="aspectFit" class="shuiyin"></image>
+      <image v-if="isshow" :src="items.video_text" placeholder="/static/images/51.png" mode="aspectFill" class="fengmian"
+        @tap="playvideo"></image>
+      <image v-if="isshow" src="/static/images/31.png" class="play-img" @tap="playvideo"></image>
+
+      <view v-if="bofangok" class="no-play">
+        <text class="no-play-text">免費觀看已用完</text>
+        <text class="no-play-text">推送1人即送VIP，可無限疊加</text>
+        <text class="no-play-text">開通會員享有更多優惠</text>
+        <view class="no-play-butt">
+          <text class="no-play-butt1" @tap="totuisong">去推送</text>
+          <text class="no-play-butt1" @tap="tovip">開通會員</text>
+        </view>
+      </view>
+    </view>
+    <view class="wenzhang-down">
+      <!-- <view class="wenzhang-down-left">
+        <image class="wenzhang-dianzan" src="/static/images/102.png"></image>
+        <text class="wenzhang-dianzan-count">{{ll}}</text>
+      </view>
+      <view class="wenzhang-down-left">
+        <image class="wenzhang-dianzan" src="/static/images/68.png"></image>
+        <text class="wenzhang-dianzan-count">{{items.comment}}</text>
+      </view>
+      <view class="wenzhang-down-left">
+        <image class="wenzhang-dianzan" v-if="give == 1" @tap.stop="dianzan" src="/static/images/121.png"></image>
+        <image class="wenzhang-dianzan" v-else @tap.stop="dianzan" src="/static/images/125.png"></image>
+        <text class="wenzhang-dianzan-count">{{dianzancount}}</text>
+      </view> -->
+      <text class="wenzhang-down-left">2小時以前·{{ll}}次觀看</text>
+      <view class="wenzhang-down-right">
+        <image class="wenzhang-dianzan" v-if="give == 1" @tap.stop="dianzan" src="/static/images/121.png"></image>
+        <image class="wenzhang-dianzan" v-else @tap.stop="dianzan" src="/static/images/125.png"></image>
+        <text class="wenzhang-dianzan-count">{{dianzancount}}</text>
+        <image class="wenzhang-dianzan" src="/static/images/68.png"></image>
+        <text class="wenzhang-dianzan-count">{{items.comment}}</text>
+      </view>
+    </view>
+    <view class="fengexian"></view>
+    <uni-popup ref="bofang">
+      <view class="tankuang">
+        <image src="/static/images/123.png" class="big-image"></image>
+        <image src="/static/images/120.png" class="close-image" @tap="closetankuang"></image>
+      </view>
+    </uni-popup>
+  </view>
+</template>
+
+<script>
+  import yyVideoPlayer from '@/components/yy-video-player/yy-video-player.nvue';
+  import uniPopup from "@/components/uni-popup/uni-popup.vue"
+  export default {
+    props: {
+      items: {
+        type: Object,
+        default: () => {
+          return {}
+        }
+      }
+    },
+    data() {
+      return {
+        myvideo: null,
+        isshow: true,
+        srcList: [{
+          name: '標清',
+          url: ''
+        }],
+        url: getApp().globalData.url,
+        header: getApp().globalData.header,
+        dianzancount: 0,
+        bofangok: false,
+        give: 0,
+        ll: 0
+      }
+    },
+    created() {
+
+
+      this.dianzancount = this.items.fabulous
+      this.give = this.items.give
+      this.ll = this.items.browse
+    },
+    methods: {
+      tovip() {
+        if (uni.getStorageSync("usertoken")) {
+          uni.navigateTo({
+            url: "/pages/mine/viphuiyuan"
+          })
+        } else {
+          uni.showToast({
+            icon: "none",
+            title: "請登入"
+          })
+        }
+
+      },
+      totuisong() {
+        if (uni.getStorageSync("usertoken")) {
+          uni.navigateTo({
+            url: "/pages/mine/fenxiang"
+          })
+        } else {
+          uni.showToast({
+            icon: "none",
+            title: "請登入"
+          })
+        }
+      },
+      closetankuang() {
+        this.$refs.bofang.close()
+      },
+      dianzan(e) {
+        e.stopPropagation()
+        if (uni.getStorageSync("usertoken")) {
+          uni.showLoading({
+            mask: true,
+            title: "請稍後 "
+          })
+          uni.request({
+            url: this.url + "/api/community/thumbs",
+            method: "GET",
+            header: {
+              token: uni.getStorageSync("usertoken")
+            },
+            data: {
+              id: this.items.id
+            },
+            success: (res) => {
+              uni.hideLoading()
+              if (res.data.code == 200) {
+                uni.showToast({
+                  icon: "none",
+                  title: "點贊成功"
+                })
+                this.dianzancount++
+                this.give = 1
+              } else {
+                uni.showToast({
+                  icon: "none",
+                  title: res.data.msg
+                })
+              }
+            }
+          })
+        } else {
+          uni.showToast({
+            icon: "none",
+            title: "請登入"
+          })
+        }
+      },
+      videoinfo() {
+        this.ll++
+        uni.navigateTo({
+          url: "/pages/index/videoinfo?id=" + this.items.id
+        })
+      },
+      pausevideo() {
+        // console.log(123);
+        this.isshow = true
+        this.bofangok = false
+        // #ifdef H5
+        this.myvideo.pause()
+        // #endif
+        // #ifdef APP-NVUE
+        this.$refs.video.pause()
+        // #endif
+
+      },
+      timevideo(e) {
+        if (e.detail.currentTime < 1) {
+          this.myvideo.seek(1)
+        }
+      },
+      playvideo() {
+        uni.showLoading({
+          mask: true,
+          title: "請稍後"
+        })
+        if (uni.getStorageSync("usertoken")) {
+          uni.request({
+            url: this.url + '/api/community/edit',
+            method: "POST",
+            data: {
+              class: 0
+            },
+            header: {
+              token: uni.getStorageSync("usertoken")
+            },
+            success: (res) => {
+              uni.hideLoading()
+              if (res.data.code == 200) {
+                // #ifdef H5
+                this.myvideo = uni.createVideoContext('myvideos', this)
+                this.myvideo.play()
+                // #endif
+                // #ifdef APP-NVUE
+                //this.$refs.video.seek(20000)
+                this.srcList[0].url = this.items.video
+                this.$refs.video.setParams({
+                  srcList: this.srcList,
+                  title: this.items.title,
+                  liveMode: false,
+                })
+                // #endif
+                this.isshow = false
+                this.$emit('playvideo')
+              } else {
+                this.bofangok = true
+                this.$emit('playvideo')
+                // this.$refs.bofang.open()
+              }
+              // console.log(res.data);
+            }
+          })
+        } else {
+          uni.request({
+            url: this.url + '/api/yk/del',
+            method: "POST",
+            data: {
+              code: uni.getStorageSync("youkedata").code,
+              class: 0
+            },
+            success: (res) => {
+              uni.hideLoading()
+              if (res.data.code == 200) {
+                // #ifdef H5
+                this.myvideo = uni.createVideoContext('myvideos', this)
+                this.myvideo.play()
+
+
+                // #endif
+                // #ifdef APP-NVUE
+                //this.$refs.video.seek(20000)
+                this.srcList[0].url = this.items.video
+                this.$refs.video.setParams({
+                  srcList: this.srcList,
+                  title: this.items.title,
+                  liveMode: false,
+                })
+                // #endif
+                this.isshow = false
+                this.$emit('playvideo')
+              } else {
+                this.bofangok = true
+                this.$emit('playvideo')
+                // this.$refs.bofang.open()
+              }
+            }
+          })
+        }
+      },
+      touserinfo(e) {
+        e.stopPropagation()
+        uni.navigateTo({
+          url: "/pages/userinfo/userinfo?id=" + this.items.id + "&class=" + this.items.class + '&isguanzhu=0'
+        })
+      }
+    },
+    components: {
+      uniPopup,
+      yyVideoPlayer
+    }
+  }
+</script>
+
+<style>
+  .shuiyin {
+    position: absolute;
+    top: 0;
+    right: 20rpx;
+    width: 150rpx;
+    height: 100rpx;
+  }
+
+  .no-play-butt1 {
+    margin: 20rpx 10rpx;
+    color: #fff;
+    border-width: 1rpx;
+    border-style: solid;
+    border-color: #fff;
+    border-radius: 100rpx;
+    font-size: 26rpx;
+    width: 200rpx;
+    height: 50rpx;
+    text-align: center;
+    line-height: 50rpx;
+  }
+
+  .no-play-butt {
+    /* #ifdef H5 */
+    display: flex;
+    /* #endif */
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .no-play-text {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 28rpx;
+    margin-bottom: 10rpx;
+  }
+
+  .no-play {
+    width: 750rpx;
+    height: 500rpx;
+    position: absolute;
+    z-index: 30;
+    background-color: #303133;
+    /* #ifdef H5 */
+    display: flex;
+    /* #endif */
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .close-image {
+    width: 100rpx;
+    height: 100rpx;
+  }
+
+  .big-image {
+    width: 602rpx;
+    height: 794rpx;
+  }
+
+  .tankuang {
+    width: 602rpx;
+    height: 958rpx;
+    /* #ifdef H5 */
+    display: flex;
+    /* #endif */
+
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .myvideo-item {
+    width: 750rpx;
+    height: 500rpx;
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+
+  .myvideo {
+    width: 750rpx;
+    height: 500rpx;
+    position: relative;
+    margin-bottom: 28rpx;
+    /* #ifdef H5 */
+    display: flex;
+    /* #endif */
+    align-items: center;
+    justify-content: center;
+  }
+
+  .play-img {
+    width: 100rpx;
+    height: 100rpx;
+    position: absolute;
+    z-index: 20;
+  }
+
+  .fengmian {
+    width: 750rpx;
+    height: 500rpx;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 10;
+    /* background-color: #c8c8c8; */
+  }
+
+  .fengexian {
+    width: 750rpx;
+    height: 16rpx;
+    background-color: rgba(245, 246, 248, 1);
+  }
+
+  .wenzhang-dianzan-count {
+    font-size: 28rpx;
+    font-weight: 400;
+    color: rgba(153, 153, 153, 1);
+  }
+
+  .wenzhang-dianzan {
+    width: 36rpx;
+    height: 36rpx;
+    margin-left: 28rpx;
+    margin-right: 16rpx;
+  }
+
+  .wenzhang-down-right {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .wenzhang-down-left {
+    /* #ifdef H5 */
+    display: flex;
+    /* #endif */
+    flex-direction: row;
+    align-items: center;
+    font-size: 28rpx;
+    font-weight: 400;
+    color: rgba(153, 153, 153, 1);
+  }
+
+  .wenzhang-down {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20rpx;
+    width: 750rpx;
+    margin: 2rpx 0 20rpx 0;
+  }
+
+  .item-text-content {
+    width: 600rpx;
+    text-overflow: ellipsis;
+    lines: 1;
+    font-size: 32rpx;
+    font-weight: 400;
+    color: rgba(32, 32, 32, 1);
+  }
+
+
+  .item-text {
+    margin: 0 32rpx 18rpx 32rpx;
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .shequ-header-right {
+    width: 148rpx;
+    height: 42rpx;
+    /* #ifdef H5 */
+    display: flex;
+    /* #endif */
+    align-items: center;
+    flex-direction: row;
+    justify-content: space-around;
+  }
+
+  .shequ-header-right1 {
+    width: 106rpx;
+    height: 42rpx;
+    text-align: center;
+    line-height: 42rpx;
+    font-size: 24rpx;
+    background-color: rgba(254, 140, 54, 0.23);
+    color: #FE8C36;
+  }
+
+  .shequ-header-right2 {
+    width: 42rpx;
+    height: 42rpx;
+    font-size: 28rpx;
+    background-color: #FE8C36;
+    color: #fff;
+    text-align: center;
+    line-height: 42rpx;
+  }
+
+  .user-name {
+    font-size: 28rpx;
+    font-weight: 600;
+    color: rgba(32, 32, 32, 1);
+    margin-bottom: 4rpx;
+    margin-right: 8rpx;
+  }
+
+  .user-old {
+    width: 78rpx;
+    height: 30rpx;
+  }
+
+  .user-vip {
+    width: 28rpx;
+    height: 28rpx;
+
+  }
+
+  .user-new {
+    width: 170rpx;
+    height: 50rpx;
+    margin-right: 8rpx;
+  }
+
+  .userinfo {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .header-userinfo {}
+
+  .header-user-image {
+    width: 72rpx;
+    height: 72rpx;
+    border-radius: 100rpx;
+    margin-top: 20rpx;
+  }
+
+  .header-user {
+    width: 72rpx;
+    height: 92rpx;
+    margin-right: 16rpx;
+    position: relative;
+    /* border-width: 1rpx;
+		border-color: #000;
+		border-style: solid; */
+    /* justify-content: flex-end; */
+    margin-bottom: 5rpx;
+  }
+
+  .user-image-vip {
+    width: 72rpx;
+    height: 30rpx;
+    margin-bottom: -10rpx;
+    position: absolute;
+    top: 0rpx;
+    left: 0;
+  }
+
+  .shequ-header-left {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .shequ-header {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    margin: 16rpx 20rpx;
+  }
+</style>
